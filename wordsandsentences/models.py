@@ -24,7 +24,7 @@ class LearningItem(models.Model):
 
 
 class Word(LearningItem):
-    pass
+    audio_file = models.FileField(blank=True, null=True)
 
 class Sentence(LearningItem):
     pass
