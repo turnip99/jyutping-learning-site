@@ -7,4 +7,5 @@ from . import views
 urlpatterns = [
     path("favicon.ico", RedirectView.as_view(url=staticfiles_storage.url("favicon.ico")),),
     path('', views.IndexView.as_view(), name='index'),
+    path('import_export/', views.ImportExportView.as_view(), name='import_export'),
 ]

@@ -1,1 +1,6 @@
-Hello world
+{% extends "base.html" %}
+
+{% block main %}
+    <h4>Hello world</h4>
+    <a href="{% url 'import_export' %}" class="btn btn-secondary w-100">Import/export words and sentences</button>
+{% endblock %}
