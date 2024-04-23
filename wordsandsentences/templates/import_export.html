@@ -1,5 +1,10 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 
 {% block main %}
-    <h4>Import/export words and sentences</h4>
+    <form id="import_form" method="post" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% crispy form %}
+        <button class="btn btn-secondary" onclick="$('#import_form').submit()">Upload</button>
+    </form>
 {% endblock %}
