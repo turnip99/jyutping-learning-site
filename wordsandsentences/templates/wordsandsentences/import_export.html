@@ -9,7 +9,7 @@
             <li>A number of audio file fields that have file names exactly matching jyutping words either already in the database or in the CSV file.</li>
         </ul>
     </div>
-    <form id="import_form" class="my-2" method="post" action="" enctype="multipart/form-data">
+    <form id="import_form" method="post" action="" enctype="multipart/form-data">
         {% csrf_token %}
         {% crispy form %}
         <button class="btn btn-secondary" onclick="$('#import_form').submit()">Upload</button>
