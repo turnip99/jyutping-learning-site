@@ -5,10 +5,13 @@
     <div class="info-box">
         Please upload one (or both of the following things):
         <ul>
-            <li>A CSV file containing the following headings: topic, jyutping, english, notes, loc, is_sentence.</li>
+            <li>A CSV file containing the following headings: topic, jyutping, english, notes, is_sentence (yes/no).</li>
             <li>A number of audio file fields that have file names exactly matching jyutping words either already in the database or in the CSV file.</li>
         </ul>
     </div>
+    {% if import_error %}
+        <div class="alert alert-danger">{{ import_error }}</div>
+    {% endif %}
     <form id="import_form" method="post" action="" enctype="multipart/form-data">
         {% csrf_token %}
         {% crispy form %}

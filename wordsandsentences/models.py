@@ -4,11 +4,14 @@ from django.db import models
 
 
 class Topic(models.Model):
-    topic_name = models.CharField(max_length=100)
+    topic_name = models.CharField(max_length=100, unique=True)
     loc = models.IntegerField()
 
     class Meta:
         ordering = ["loc"]
+
+    def __str__(self):
+        return self.topic_name
 
 
 class LearningItem(models.Model):
@@ -21,6 +24,10 @@ class LearningItem(models.Model):
     class Meta:
         abstract = True
         ordering = ["loc"]
+        unique_together = [["topic", "jyutping"]]
+
+    def __str__(self):
+        return f"{self.jyutping} ({self.english})"
 
 
 class Word(LearningItem):
