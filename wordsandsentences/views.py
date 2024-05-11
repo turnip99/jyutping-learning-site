@@ -21,11 +21,6 @@ class IndexView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context["topic_dict"] = get_topic_dict(exclude_empty_topics=True)
         return context
-    
-
-class WordAudioView(generic.DetailView):
-    template_name = "wordsandsentences/audio.html"
-    model = Word
 
 
 class EditListView(generic.TemplateView):

@@ -5,7 +5,6 @@ from . import views
 
 urlpatterns = [
     path('', login_required(views.IndexView.as_view(), login_url="/login/"), name='index'),
-    path('word_audio/<int:pk>', login_required(views.WordAudioView.as_view(), login_url="/login/"), name='word_audio'),
     path('edit_list/', login_required(views.EditListView.as_view(), login_url="/login/"), name='edit_list'),
     path('topic_create/', login_required(views.TopicCreateView.as_view(), login_url="/login/"), name='topic_create'),
     path('topic_update/<int:pk>/', login_required(views.TopicUpdateView.as_view(), login_url="/login/"), name='topic_update'),

@@ -34,7 +34,8 @@
                                         <td>{% if word.notes %}{{ word.notes }}{% else %}-{% endif %}</td>
                                         <td>
                                             {% if word.audio_file %}
-                                                <a href="javascript:void(0);" class="btn-load-audio text-decoration-none" data-word-id="{{ word.id }}">&#128266;</a>
+                                                {% include "wordsandsentences/audio.html" with object=word %}
+                                                <a href="javascript:void(0);" class="btn-play-audio text-decoration-none" data-word-id="{{ word.id }}">&#128266;</a>
                                             {% else %}
                                                 -
                                             {% endif %}
@@ -52,18 +53,13 @@
 
 {% block scripts %}
     <script>
-        $(".btn-load-audio").click(function() {
+        $(".btn-play-audio").click(function() {
             const button = $(this)
             const td = button.closest("td")
             const wordID = button.data("word-id")
             const existing_audio_tag = td.find("audio")
             if (existing_audio_tag.length) {
                 existing_audio_tag[0].play()
-            }
-            else {
-                $.get("{% url 'word_audio' pk=0 %}".replace("0", wordID), function(html_response) {
-                    button.parent().append(html_response)
-                });
             }
         });
     </script>
