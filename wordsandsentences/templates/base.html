@@ -38,4 +38,15 @@
     {% block main %}{% endblock %}
 </div>
 
+<script>
+    $(".btn-play-audio").click(function() {
+        const button = $(this)
+        const td = button.closest("td")
+        const wordID = button.data("word-id")
+        const existing_audio_tag = td.find("audio")
+        if (existing_audio_tag.length) {
+            existing_audio_tag[0].play()
+        }
+    });
+</script>
 {% block scripts %}{% endblock %}
