@@ -11,10 +11,21 @@ from django.views import generic
 
 from .forms import ImportForm, TopicForm, WordForm, SentenceForm
 from .models import Topic, Word, Sentence
+from .utils import get_topic_dict
 
 
 class IndexView(generic.TemplateView):
     template_name = "wordsandsentences/index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["topic_dict"] = get_topic_dict(exclude_empty_topics=True)
+        return context
+    
+
+class WordAudioView(generic.DetailView):
+    template_name = "wordsandsentences/audio.html"
+    model = Word
 
 
 class EditListView(generic.TemplateView):
@@ -22,10 +33,7 @@ class EditListView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        topic_dict = {}
-        for topic in Topic.objects.all():
-            topic_dict[topic] = {"words": topic.word_set.all(), "sentences": topic.sentence_set.all()}
-        context["topic_dict"] = topic_dict
+        context["topic_dict"] = get_topic_dict()
         return context
 
 
@@ -117,7 +125,7 @@ class ImportView(generic.FormView):
                         if (topic := row["topic"]) not in existing_topic_names:
                             Topic.objects.create(topic_name=topic, loc=next_topic_loc)
                             print(f"Creating topic {topic}")
-                            next_topic_loc += 1
+                            next_topic_loc += 10
                             existing_topic_names.append(topic)
                     # Sort objects by topic
                     words_by_topic = {}

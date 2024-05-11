@@ -6,4 +6,65 @@
     {% if request.user.is_superuser %}
         <a href="{% url 'admin:index' %}" class="btn btn-danger w-100 mb-1">Django admin</a>
     {% endif %}
+
+    <div class="accordion" id="words_accordion">
+        {% for topic, words_and_sentences in topic_dict.items %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ topic.pk }}" aria-expanded="true" aria-controls="collapse_{{ topic.pk }}">
+                        {{ topic.topic_name}}
+                    </button>
+                </h2>
+                <div id="collapse_{{ topic.pk }}" class="accordion-collapse collapse hide" data-bs-parent="#words_accordion">
+                    <div class="accordion-body table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Jyutping</th>
+                                    <th>English</th>
+                                    <th>Notes</th>
+                                    <th>Listen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for word in words_and_sentences.words %}
+                                    <tr>
+                                        <td>{{ word.jyutping }}</td>
+                                        <td>{{ word.english }}</td>
+                                        <td>{% if word.notes %}{{ word.notes }}{% else %}-{% endif %}</td>
+                                        <td>
+                                            {% if word.audio_file %}
+                                                <a href="javascript:void(0);" class="btn-load-audio text-decoration-none" data-word-id="{{ word.id }}">&#128266;</a>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(".btn-load-audio").click(function() {
+            const button = $(this)
+            const td = button.closest("td")
+            const wordID = button.data("word-id")
+            const existing_audio_tag = td.find("audio")
+            if (existing_audio_tag.length) {
+                existing_audio_tag[0].play()
+            }
+            else {
+                $.get("{% url 'word_audio' pk=0 %}".replace("0", wordID), function(html_response) {
+                    button.parent().append(html_response)
+                });
+            }
+        });
+    </script>
 {% endblock %}

@@ -14,7 +14,6 @@
                             <li>
                                 <a href="{% url 'word_update' pk=word.pk %}">{{ word }}</a>
                                 <a href="{% url 'word_delete' pk=word.pk %}" style="text-decoration: none;">&#128465;</a>
-                                
                             </li>
                         {% endfor %}
                         <li><a href="{% url 'word_create' topic_pk=topic.pk %}">Add a new word</a></li>
@@ -25,7 +24,6 @@
                             <li>
                                 <a href="{% url 'sentence_update' pk=sentence.pk %}">{{ sentence }}</a>
                                 <a href="{% url 'sentence_delete' pk=sentence.pk %}" style="text-decoration: none;">&#128465;</a>
-                                
                             </li>
                         {% endfor %}
                         <li><a href="{% url 'sentence_create' topic_pk=topic.pk %}">Add a new sentence</a></li>
