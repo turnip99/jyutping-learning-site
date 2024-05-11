@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block main %}
+<form id="delete_form" method="post" action="">
+    <p>Are you sure that you want to delete {{ object }}?</p>
+    {% csrf_token %}
+    <button class="btn btn-secondary" onclick="$('#delete_form').submit()">Delete</button>
+</form>
+{% endblock %}

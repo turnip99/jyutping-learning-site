@@ -16,7 +16,7 @@
         background-color: var(--content-bg-colour);
         padding: 0.5rem;
         border: 1px solid var(--content-border-colour);
-        margin: 1em 0;
+        margin-bottom: 1em;
         border-radius: 0.25rem;
     }
 </style>
@@ -24,7 +24,7 @@
 
 <div class="px-5 py-3" style="background-color: var(--page-bg-colour); min-height: 100%;">
     <div class="row">
-        <div class="col"><h1><a href="/" style="text-decoration: inherit; color: inherit;">Jyutping Learning Site</a></h1></div>
+        <div class="col mb-3"><h1><a href="/" style="text-decoration: inherit; color: inherit;">Jyutping Learning Site</a></h1></div>
         {% if request.user.username %}
             <div class="col-auto text-end">
                 <form action="{% url 'logout' %}" method="post">

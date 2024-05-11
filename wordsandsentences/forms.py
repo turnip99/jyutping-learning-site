@@ -3,6 +3,45 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Layout, Div
 from django.urls import reverse_lazy
 
+from jyutpinglearningsite.forms import FormWithHelperMixin
+from .models import Topic, LearningItem, Word, Sentence
+
+
+class TopicForm(FormWithHelperMixin, forms.ModelForm):
+    class Meta:
+        model = Topic
+        fields = [
+            "topic_name",
+            "loc",
+        ]
+
+
+
+class LearningItemForm(FormWithHelperMixin, forms.ModelForm):
+    class Meta:
+        abstract = True
+        model = LearningItem
+        fields = [
+            "topic",
+            "jyutping",
+            "english",
+            "notes",
+            "loc",
+        ]
+
+
+class WordForm(LearningItemForm):
+    class Meta(LearningItemForm.Meta):
+        abstract = False
+        model = Word
+        fields = LearningItemForm.Meta.fields + ["audio_file"]
+
+
+class SentenceForm(LearningItemForm):
+    class Meta(LearningItemForm.Meta):
+        abstract = False
+        model = Sentence
+
 
 class MultipleFileInput(forms.FileInput):
     allow_multiple_selected = True

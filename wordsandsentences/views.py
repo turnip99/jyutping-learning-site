@@ -9,12 +9,94 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
 
-from .forms import ImportForm
+from .forms import ImportForm, TopicForm, WordForm, SentenceForm
 from .models import Topic, Word, Sentence
 
 
 class IndexView(generic.TemplateView):
     template_name = "wordsandsentences/index.html"
+
+
+class EditListView(generic.TemplateView):
+    template_name = "wordsandsentences/edit/list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        topic_dict = {}
+        for topic in Topic.objects.all():
+            topic_dict[topic] = {"words": topic.word_set.all(), "sentences": topic.sentence_set.all()}
+        context["topic_dict"] = topic_dict
+        return context
+
+
+class TopicCreateView(generic.CreateView):
+    template_name = "wordsandsentences/edit/form.html"
+    model = Topic
+    form_class = TopicForm
+    success_url = reverse_lazy("edit_list")
+
+
+class TopicUpdateView(generic.UpdateView):
+    template_name = "wordsandsentences/edit/form.html"
+    model = Topic
+    form_class = TopicForm
+    success_url = reverse_lazy("edit_list")
+
+
+class TopicDeleteView(generic.DeleteView):
+    template_name = "wordsandsentences/edit/delete.html"
+    model = Topic
+    success_url = reverse_lazy("edit_list")
+
+
+class WordCreateView(generic.CreateView):
+    template_name = "wordsandsentences/edit/form.html"
+    model = Word
+    form_class = WordForm
+    success_url = reverse_lazy("edit_list")
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["topic"] = Topic.objects.get(pk=self.kwargs["topic_pk"])
+        return initial
+
+
+class WordUpdateView(generic.UpdateView):
+    template_name = "wordsandsentences/edit/form.html"
+    model = Word
+    form_class = WordForm
+    success_url = reverse_lazy("edit_list")
+
+
+class WordDeleteView(generic.DeleteView):
+    template_name = "wordsandsentences/edit/delete.html"
+    model = Word
+    success_url = reverse_lazy("edit_list")
+
+
+class SentenceCreateView(generic.CreateView):
+    template_name = "wordsandsentences/edit/form.html"
+    model = Sentence
+    form_class = SentenceForm
+    success_url = reverse_lazy("edit_list")
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["topic"] = Topic.objects.get(pk=self.kwargs["topic_pk"])
+        return initial
+
+
+class SentenceUpdateView(generic.UpdateView):
+    template_name = "wordsandsentences/edit/form.html"
+    model = Sentence
+    form_class = SentenceForm
+    success_url = reverse_lazy("edit_list")
+
+
+class SentenceDeleteView(generic.DeleteView):
+    template_name = "wordsandsentences/edit/delete.html"
+    model = Sentence
+    success_url = reverse_lazy("edit_list")
 
 
 class ImportView(generic.FormView):

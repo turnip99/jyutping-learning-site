@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block main %}
+    <div class="row">
+        {% for topic, words_and_sentences in topic_dict.items %}
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <a href="{% url 'topic_update' pk=topic.pk %}">{{ topic }}</a>
+                <a href="{% url 'topic_delete' pk=topic.pk %}" style="text-decoration: none;">&#128465;</a>
+                <ul>
+                    <li>Words</li>
+                    <ul>
+                        {% for word in words_and_sentences.words %}
+                            <li>
+                                <a href="{% url 'word_update' pk=word.pk %}">{{ word }}</a>
+                                <a href="{% url 'word_delete' pk=word.pk %}" style="text-decoration: none;">&#128465;</a>
+                                
+                            </li>
+                        {% endfor %}
+                        <li><a href="{% url 'word_create' topic_pk=topic.pk %}">Add a new word</a></li>
+                    </ul>
+                    <li>Sentences</li>
+                    <ul>
+                        {% for sentence in words_and_sentences.sentences %}
+                            <li>
+                                <a href="{% url 'sentence_update' pk=sentence.pk %}">{{ sentence }}</a>
+                                <a href="{% url 'sentence_delete' pk=sentence.pk %}" style="text-decoration: none;">&#128465;</a>
+                                
+                            </li>
+                        {% endfor %}
+                        <li><a href="{% url 'sentence_create' topic_pk=topic.pk %}">Add a new sentence</a></li>
+                    </ul>
+                </ul>
+            </div>
+        {% endfor %}
+        <a href="{% url 'topic_create' %}">Add a new topic</a>
+    </div>
+{% endblock %}
