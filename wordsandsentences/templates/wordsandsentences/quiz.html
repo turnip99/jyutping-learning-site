@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block styles %}
+    <style>
+        .option-button {
+            margin: 0.2em;
+            padding: 0.5em;
+            text-align: center;
+            border: 1px solid #333333;
+        }
+        .option-button:not(.disabled) {
+            cursor: pointer;
+        }
+        .option-button.selected {
+            background-color: var(--content-bg-colour);
+        }
+        .option-button.correct {
+            background-color: #23cc21;
+        }
+        .option-button.incorrect {
+            background-color: #cc2121;
+        }
+    </style>
+{% endblock %}
+
+{% block main %}
+    {% for question in questions %}
+        <div class="question-div{% if not forloop.first %} d-none{% endif %}">
+            <div class="row mb-1">
+                <div class="col-12 col-md-6 order-2 order-md-1">
+                    <h5>
+                        {{ question.question_text }}
+                        {% if question.question_audio_url %}
+                            {% include "wordsandsentences/audio.html" with audio_url=question.question_audio_url %}
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="col-12 col-md-6 order-1 order-md-2 text-start text-md-end">Question {{ forloop.counter }}/{{ questions|length }}</div>    
+            </div>
+            <div class="row mb-2 m-0">
+                {% for option in question.options %}
+                    <div class="col-12 col-md-6 p-0">
+                        <div class="option-button" data-correct="{% if option.text == question.correct_text %}true{% else %}false{% endif %}">
+                            {{ option.text }}
+                            {% if option.audio_url %}
+                                {% include "wordsandsentences/audio.html" with audio_url=option.audio_url %}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+    <button id="btn_next" class="btn btn-primary w-100 mb-3" disabled>Next &#x2192;</button>
+    <div id="div_results" class="info-box d-none mb-3"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        correct_answers_count = 0
+
+        $(".option-button").click(function() {
+            if ($(this).hasClass("disabled")) {
+                return
+            }
+            const previouslySelected = $(this).hasClass("selected")
+            if (!previouslySelected) {
+                $(this).closest(".question-div").find(".option-button").removeClass("selected")
+            }
+            $(this).toggleClass("selected")
+            $("#btn_next").prop("disabled", previouslySelected)
+        });
+
+        $("#btn_next").click(function() {
+            const nextButton = $(this)
+            const currentQuestionDiv = $(".question-div").not(".d-none")
+            currentQuestionDiv.find(".option-button").addClass("disabled")
+            const selectedOption = currentQuestionDiv.find(".option-button.selected")
+            if (selectedOption.length) {
+                selectedOption.removeClass("selected")
+                if (selectedOption.data("correct") == true) {
+                    selectedOption.addClass("correct")
+                    correct_answers_count++
+                }
+                else {
+                    selectedOption.addClass("incorrect")
+                    currentQuestionDiv.find(".option-button[data-correct=true]").addClass("correct")
+                }
+            }
+            else {
+                currentQuestionDiv.addClass("d-none")
+                const nextQuestion = currentQuestionDiv.next(".question-div")
+                if (nextQuestion.length) {
+                    nextQuestion.removeClass("d-none")
+                }
+                else {
+                    nextButton.addClass("d-none")
+                    $("#div_results").removeClass("d-none").html(`You got ${correct_answers_count} out of {{ questions|length }} questions correct!`)
+                }
+            }
+        });
+    </script>
+{% endblock %}

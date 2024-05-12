@@ -1,8 +1,6 @@
-{% if object.audio_file %}
-    <audio controls class="d-none">
-        Play audio file.
-        <source class="source" src="{{ object.audio_file.url }}" type="audio/mp3">
-        Your browser does not support the audio element.
-    </audio>
-    <a href="javascript:void(0);" class="btn-play-audio text-decoration-none" data-word-id="{{ word.id }}">&#128266;</a>
-{% endif %}
+<audio controls class="d-none">
+    Play audio file.
+    <source class="source" src="{{ audio_url }}" type="audio/mp3">
+    Your browser does not support the audio element.
+</audio>
+<a href="javascript:void(0);" class="btn-play-audio text-decoration-none">&#128266;</a>

@@ -7,6 +7,11 @@ from jyutpinglearningsite.forms import FormWithHelperMixin
 from .models import Topic, LearningItem, Word, Sentence
 
 
+class QuizStartForm(FormWithHelperMixin, forms.Form):
+    question_count = forms.ChoiceField(choices=((10, "10"), (25, "25"), (50, "50")), label="Number of questions")
+    include_audio = forms.BooleanField(initial=True, label="Include questions with audio", required=False)
+
+
 class TopicForm(FormWithHelperMixin, forms.ModelForm):
     class Meta:
         model = Topic

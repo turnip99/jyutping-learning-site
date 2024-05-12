@@ -1,15 +1,17 @@
 import csv
+import random
 from datetime import datetime
 from io import BytesIO, StringIO
 
 from django.core.files import File
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
 
-from .forms import ImportForm, TopicForm, WordForm, SentenceForm
+from .forms import QuizStartForm, ImportForm, TopicForm, WordForm, SentenceForm
 from .models import Topic, Word, Sentence
 from .utils import get_topic_dict
 
@@ -21,6 +23,74 @@ class IndexView(generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context["topic_dict"] = get_topic_dict(exclude_empty_topics=True)
         return context
+    
+
+class QuizView(generic.FormView):
+    template_name = "wordsandsentences/quiz_start.html"
+    form_class = QuizStartForm
+
+    @staticmethod
+    def get_question_type(include_audio):
+        question_int = random.randint(0, 99)
+        if question_int <= 99:
+            return "j_to_e"
+        
+    @staticmethod
+    def get_random_word_or_sentence(exclude_words_jyutping=[], exclude_sentences_jyutping=[]):
+        words = Word.objects.all()
+        if exclude_words_jyutping:
+            words = words.exclude(jyutping__in=exclude_words_jyutping)
+        sentences = Sentence.objects.all()
+        if exclude_sentences_jyutping:
+            sentences = sentences.exclude(jyutping__in=exclude_sentences_jyutping)
+        return random.choice(list(words) + list(sentences))
+    
+    @staticmethod
+    def get_random_word(exclude_english=[], exclude_jyutping=[]):
+        words = Word.objects.all()
+        if exclude_english or exclude_jyutping:
+            words = words.exclude(Q(english__in=exclude_english) | Q(jyutping__in=exclude_jyutping))
+        return random.choice(words)
+    
+    @staticmethod
+    def get_random_sentence(exclude_english=[], exclude_jyutping=[]):
+        sentences = Sentence.objects.all()
+        if exclude_english or exclude_jyutping:
+            sentences = sentences.exclude(Q(english__in=exclude_english) | Q(jyutping__in=exclude_jyutping))
+        return random.choice(sentences)
+
+
+    def form_valid(self, form):
+        question_count = int(form.cleaned_data["question_count"])
+        include_audio = form.cleaned_data["include_audio"]
+        questions = []
+        for _question_number in range(question_count):
+            used_words_jyutping = []
+            used_sentences_jyutping = []
+            question_type = self.get_question_type(include_audio)
+            match question_type:
+                case "j_to_e":
+                    correct_word = self.get_random_word_or_sentence(exclude_words_jyutping=used_words_jyutping, exclude_sentences_jyutping=used_sentences_jyutping)
+                    question_text = f"What is the English translation of '{correct_word.jyutping}'?"
+                    question_audio_url = correct_word.audio_file.url if type(correct_word) == Word and correct_word.audio_file and include_audio else None
+                    exclude_english = [correct_word.english]
+                    exclude_jyutping = [correct_word.jyutping]
+                    incorrect_words = []
+                    for _i in range(3):
+                        if type(correct_word) == Word:
+                            used_words_jyutping.append(correct_word.jyutping)
+                            incorrect_word = self.get_random_word(exclude_english=exclude_english, exclude_jyutping=exclude_jyutping)
+                        else:
+                            used_sentences_jyutping.append(correct_word.jyutping)
+                            incorrect_word = self.get_random_sentence(exclude_english=exclude_english, exclude_jyutping=exclude_jyutping)
+                        exclude_english.append(incorrect_word.english)
+                        exclude_jyutping.append(incorrect_word.jyutping)
+                        incorrect_words.append(incorrect_word)
+                    options = [{"text": word.english, "audio_url": None} for word in [incorrect_word for incorrect_word in incorrect_words] + [correct_word]]
+                    random.shuffle(options)
+                    questions.append({"question_text": question_text, "question_audio_url": question_audio_url, "correct_text": correct_word.english, "options": options})
+        return render(self.request, "wordsandsentences/quiz.html", {"questions": questions})
+
 
 
 class EditListView(generic.TemplateView):

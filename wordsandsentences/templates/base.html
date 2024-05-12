@@ -20,7 +20,7 @@
         border-radius: 0.25rem;
     }
 </style>
-
+{% block styles %}{% endblock %}
 
 <div class="px-5 py-3" style="background-color: var(--page-bg-colour); min-height: 100%;">
     <div class="row">
@@ -41,9 +41,7 @@
 <script>
     $(".btn-play-audio").click(function() {
         const button = $(this)
-        const td = button.closest("td")
-        const wordID = button.data("word-id")
-        const existing_audio_tag = td.find("audio")
+        const existing_audio_tag = button.parent().find("audio")
         if (existing_audio_tag.length) {
             existing_audio_tag[0].play()
         }
