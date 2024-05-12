@@ -39,7 +39,8 @@
 </div>
 
 <script>
-    $(".btn-play-audio").click(function() {
+    $(".btn-play-audio").click(function(e) {
+        e.stopPropagation()
         const button = $(this)
         const existing_audio_tag = button.parent().find("audio")
         if (existing_audio_tag.length) {

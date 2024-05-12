@@ -11,6 +11,12 @@ class QuizStartForm(FormWithHelperMixin, forms.Form):
     question_count = forms.ChoiceField(choices=((10, "10"), (25, "25"), (50, "50")), label="Number of questions")
     include_audio = forms.BooleanField(initial=True, label="Include questions with audio", required=False)
 
+    def clean_question_count(self):
+        question_count = self.cleaned_data["question_count"]
+        if int(question_count) > Word.objects.count() + Sentence.objects.count():
+            raise forms.ValidationError("You do not have enough words and sentences in the database for a quiz of this length.")
+        return question_count
+
 
 class TopicForm(FormWithHelperMixin, forms.ModelForm):
     class Meta:

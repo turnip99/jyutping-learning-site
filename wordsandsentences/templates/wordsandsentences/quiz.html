@@ -21,6 +21,12 @@
         .option-button.incorrect {
             background-color: #cc2121;
         }
+        .answer-text.correct {
+            background-color: #23cc21;
+        }
+        .answer-text.incorrect {
+            background-color: #cc2121;
+        }
     </style>
 {% endblock %}
 
@@ -39,16 +45,21 @@
                 <div class="col-12 col-md-6 order-1 order-md-2 text-start text-md-end">Question {{ forloop.counter }}/{{ questions|length }}</div>    
             </div>
             <div class="row mb-2 m-0">
-                {% for option in question.options %}
-                    <div class="col-12 col-md-6 p-0">
-                        <div class="option-button" data-correct="{% if option.text == question.correct_text %}true{% else %}false{% endif %}">
-                            {{ option.text }}
-                            {% if option.audio_url %}
-                                {% include "wordsandsentences/audio.html" with audio_url=option.audio_url %}
-                            {% endif %}
+                {% if question.options %}
+                    {% for option in question.options %}
+                        <div class="col-12 col-md-6 p-0">
+                            <div class="option-button" data-correct="{% if option.text == question.correct_text %}true{% else %}false{% endif %}">
+                                <span class="option-text{% if option.hide_text %} d-none{% endif %}"">{{ option.text }}</span>
+                                {% if option.audio_url %}
+                                    {% include "wordsandsentences/audio.html" with audio_url=option.audio_url %}
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <input type="text" class="answer-text form-control" data-answer="{{ question.correct_text }}"></input>
+                    <label class="d-none correct-answer-label my-1 fw-bold" style="color: #198217">{{ question.correct_text }}</label>
+                {% endif %}
             </div>
         </div>
     {% endfor %}
@@ -72,13 +83,21 @@
             $("#btn_next").prop("disabled", previouslySelected)
         });
 
+        $(".answer-text").on("input", function() {
+            const answerText = $(this)
+            const userInput = answerText.val()
+            $("#btn_next").prop("disabled", userInput.length == 0)
+        })
+
         $("#btn_next").click(function() {
             const nextButton = $(this)
             const currentQuestionDiv = $(".question-div").not(".d-none")
             currentQuestionDiv.find(".option-button").addClass("disabled")
             const selectedOption = currentQuestionDiv.find(".option-button.selected")
+            const enabledAnswerText = currentQuestionDiv.find(".answer-text:not(:disabled)")
             if (selectedOption.length) {
                 selectedOption.removeClass("selected")
+                currentQuestionDiv.find(".option-text").removeClass("d-none")
                 if (selectedOption.data("correct") == true) {
                     selectedOption.addClass("correct")
                     correct_answers_count++
@@ -88,16 +107,34 @@
                     currentQuestionDiv.find(".option-button[data-correct=true]").addClass("correct")
                 }
             }
+            else if (enabledAnswerText.length) {
+                enabledAnswerText.prop("disabled", true)
+                if (enabledAnswerText.val().toLowerCase() == enabledAnswerText.data("answer").toLowerCase()) {
+                    enabledAnswerText.addClass("correct")
+                    correct_answers_count += 1
+                }
+                else {
+                    enabledAnswerText.addClass("incorrect").next(".correct-answer-label").removeClass("d-none")
+                }
+            }
             else {
                 currentQuestionDiv.addClass("d-none")
                 const nextQuestion = currentQuestionDiv.next(".question-div")
                 if (nextQuestion.length) {
                     nextQuestion.removeClass("d-none")
+                    nextButton.prop("disabled", true)
                 }
                 else {
                     nextButton.addClass("d-none")
                     $("#div_results").removeClass("d-none").html(`You got ${correct_answers_count} out of {{ questions|length }} questions correct!`)
                 }
+            }
+        });
+
+        $(document).on('keyup',function(e) {
+            const nextButton = $("#btn_next")
+            if (e.which == 13 && !nextButton.prop("disabled")) {
+                nextButton.click()
             }
         });
     </script>
