@@ -321,13 +321,13 @@ class ImportView(generic.FormView):
                 try:
                     for audio_file in audio_files:
                         file_name = audio_file.name.split(".")[0]
-                        try:
-                            obj = Word.objects.get(jyutping__iexact=file_name)
-                        except Word.DoesNotExist:
+                        words = Word.objects.filter(jyutping__iexact=file_name)
+                        if not words.exists():
                             raise Exception(f"No word found with jyutping '{file_name}'.")
-                        print(f"Attaching audio file to {obj}")
-                        obj.audio_file = File(audio_file.file, name=audio_file.name)
-                        obj.save()
+                        for word in words:
+                            print(f"Attaching audio file to {word}")
+                            word.audio_file = File(audio_file.file, name=audio_file.name)
+                            word.save()
                 except Exception as e:
                     return render(self.request, self.template_name, {"form": form, "import_error": f"Error in audio files: {e}"})
 
