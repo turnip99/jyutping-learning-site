@@ -1,4 +1,5 @@
 import csv
+import os
 import random
 import re
 from datetime import datetime
@@ -325,6 +326,8 @@ class ImportView(generic.FormView):
                         if not words.exists():
                             raise Exception(f"No word found with jyutping '{file_name}'.")
                         for word in words:
+                            if word.audio_file and os.path.isfile(word.audio_file.path):
+                                os.remove(word.audio_file.path)
                             print(f"Attaching audio file to {word}")
                             word.audio_file = File(audio_file.file, name=audio_file.name)
                             word.save()
