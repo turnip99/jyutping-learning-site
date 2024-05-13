@@ -12,9 +12,7 @@
     {% if import_error %}
         <div class="alert alert-danger">{{ import_error }}</div>
     {% endif %}
-    <form id="import_form" method="post" action="" enctype="multipart/form-data">
-        {% csrf_token %}
+    <form id="import_form" method="post" enctype="multipart/form-data">
         {% crispy form %}
-        <button class="btn btn-secondary" onclick="$('#import_form').submit()">Upload</button>
     </form>
 {% endblock %}

@@ -2,9 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block main %}
-    <form id="quiz_start_form" method="post" action="">
-        {% csrf_token %}
+    <form id="quiz_start_form" method="post">
         {% crispy form %}
-        <button class="btn btn-primary" onclick="$('#quiz_start_form').submit()">Start quiz</button>
     </form>
 {% endblock %}

@@ -1,6 +1,6 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, Layout, Div
+from crispy_forms.layout import HTML, Layout, Div, Submit
 from django.urls import reverse_lazy
 
 from jyutpinglearningsite.forms import FormWithHelperMixin
@@ -10,6 +10,8 @@ from .models import Topic, LearningItem, Word, Sentence
 class QuizStartForm(FormWithHelperMixin, forms.Form):
     question_count = forms.ChoiceField(choices=((10, "10"), (25, "25"), (50, "50")), label="Number of questions")
     include_audio = forms.BooleanField(initial=True, label="Include questions with audio", required=False)
+    submit_text = "Start quiz"
+    submit_css_class = "btn-primary"
 
     def clean_question_count(self):
         question_count = self.cleaned_data["question_count"]
@@ -80,6 +82,7 @@ class ImportForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.layout = Layout(Div(Div("words_csv", css_class="col"), Div(HTML(f"<a href='{reverse_lazy("words_export")}' class='btn btn-info'>Export existing words</a>"), css_class="col-auto mb-3"), css_class="row align-items-end"), "audio_files")
+        self.helper.add_input(Submit('submit', "Upload", css_class="btn-secondary"))
 
     def clean(self):
         super().clean()

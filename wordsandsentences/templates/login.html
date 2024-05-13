@@ -2,9 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block main %}
-<form id="login_form" method="post" action="">
-   {% csrf_token %}
-   {% crispy form %}
-   <button class="btn btn-secondary" onclick="$('#login_form').submit()">Log in</button>
-</form>
+   <form id="login_form" method="post">
+      {% crispy form %}
+   </form>
 {% endblock %}

@@ -2,9 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block main %}
-    <form id="edit_form" method="post" action="" enctype="multipart/form-data">
-        {% csrf_token %}
+    <form id="edit_form" method="post" enctype="multipart/form-data">
         {% crispy form %}
-        <button class="btn btn-secondary" onclick="$('#edit_form').submit()">Save</button>
     </form>
 {% endblock %}
