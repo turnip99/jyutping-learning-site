@@ -33,25 +33,19 @@ class QuizView(generic.FormView):
 
     @staticmethod
     def get_question_type(include_audio):
-        question_int = random.randint(0, 99)
-        if include_audio:
-            if question_int <= 30:
-                return "j_to_e"
-            elif question_int <= 60:
-                return "e_to_j_buttons"
-            elif question_int <= 80:
-                return "e_to_j_text"
-            elif question_int <= 90:
-                return "audio_to_tone"
-            else:
-                return "audio_to_not_tone"
+        question_int = random.randint(0, 300 if include_audio else 99)
+        if question_int > 120:
+            return "audio_to_tone"
+        elif question_int > 99:
+            return "audio_to_not_tone"
+        if question_int > 70:
+            return "j_to_e"
+        elif question_int > 40:
+            return "e_to_j_buttons"
+        elif question_int > 0:
+            return "e_to_j_text"
         else:
-            if question_int <= 30:
-                return "j_to_e"
-            elif question_int <= 60:
-                return "e_to_j_buttons"
-            else:
-                return "e_to_j_text"
+            return "sentence_to_missing_word"
         
     @staticmethod
     def get_random_word_or_sentence(exclude_word_ids=[], exclude_sentence_ids=[]):
@@ -132,9 +126,12 @@ class QuizView(generic.FormView):
                         used_sentence_ids.append(correct_word.id)
                     else:
                         used_word_ids.append(correct_word.id)
-                    question_text = f"What is the Jyutping representation of '{correct_word.english}'?"
-                    incorrect_words = self.get_incorrect_words(correct_word, is_sentence)
-                    options = [{"text": word.jyutping, "audio_url": word.audio_file.url if not is_sentence and word.audio_file and include_audio else None, "hide_text": False} for word in [incorrect_word for incorrect_word in incorrect_words] + [correct_word]]
+                    if (option_audio_only := not is_sentence and correct_word.audio_file and include_audio and random.randint(0, 1) == 1):
+                        question_text = f"What is the Cantonse word for '{correct_word.english}'?"
+                    else:
+                        question_text = f"What is the Jyutping representation of '{correct_word.english}'?"
+                    incorrect_words = self.get_incorrect_words(correct_word, is_sentence, audio_only=True)
+                    options = [{"text": word.jyutping, "audio_url": word.audio_file.url if not is_sentence and word.audio_file and include_audio else None, "hide_text": option_audio_only} for word in [incorrect_word for incorrect_word in incorrect_words] + [correct_word]]
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct_text": correct_word.jyutping, "options": options})
                 case "e_to_j_text":
@@ -158,11 +155,11 @@ class QuizView(generic.FormView):
                     tones_in_word = set(re.findall(r'\d+', correct_word.jyutping))
                     tones_not_in_word = list(set(["1", "2", "3", "4", "5", "6"]).difference(tones_in_word))
                     excluded_tone = random.choice(tones_not_in_word)
-                    question_text = f"Which of these Cantonese words does not use tone {excluded_tone}"
+                    question_text = f"Which of these Cantonese words does not use tone {excluded_tone}?"
                     incorrect_words = self.get_incorrect_words(correct_word, False, include_tone=excluded_tone, audio_only=True)
                     options = [{"text": word.jyutping, "audio_url": word.audio_file.url, "hide_text": True} for word in [incorrect_word for incorrect_word in incorrect_words] + [correct_word]]
                     random.shuffle(options)
-                    questions.append({"question_text": question_text, "question_audio_url": None, "correct_text": correct_word.jyutping[-1], "options": options})
+                    questions.append({"question_text": question_text, "question_audio_url": None, "correct_text": correct_word.jyutping, "options": options})
         return render(self.request, "wordsandsentences/quiz.html", {"questions": questions})
 
 
