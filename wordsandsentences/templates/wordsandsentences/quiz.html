@@ -9,22 +9,32 @@
             text-align: center;
             border: 1px solid #333333;
         }
-        .option-button:not(.disabled) {
+        .ordering-option-button {
+            margin: 0.1em;
+            padding: 0.1em 0.4em;
+            text-align: center;
+            border: 1px solid #333333;
+            border-radius: 0.2rem;
+        }
+        .ordering-unused-options-div > .ordering-option-button {
+            background-color: #00000010;
+        }
+        .ordering-used-options-div > .ordering-option-button {
+            background-color: #81dd0930;
+        }
+        .ordering-answer-div > .ordering-option-button {
+            background-color: #23cc21;
+        }
+        .option-button:not(.disabled), .ordering-option-button:not(.disabled) {
             cursor: pointer;
         }
         .option-button.selected {
             background-color: var(--content-bg-colour);
         }
-        .option-button.correct {
+        .option-button.correct, .ordering-option-button.correct, .answer-text.correct {
             background-color: #23cc21;
         }
-        .option-button.incorrect {
-            background-color: #cc2121;
-        }
-        .answer-text.correct {
-            background-color: #23cc21;
-        }
-        .answer-text.incorrect {
+        .option-button.incorrect, .ordering-option-button.incorrect, .answer-text.incorrect {
             background-color: #cc2121;
         }
     </style>
@@ -45,11 +55,27 @@
                 <div class="col-12 col-md-6 order-1 order-md-2 text-start text-md-end">Question {{ forloop.counter }}/{{ questions|length }}</div>    
             </div>
             <div class="row mb-2 m-0">
-                {% if question.options %}
+                {% if question.ordering_options %}
+                    <div class="my-1 p-0 ordering-unused-options-div">
+                        {% for ordering_option in question.ordering_options %}
+                            <div class="ordering-option-button d-inline">
+                                <span class="ordering-option-text">{{ ordering_option }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="my-1 p-0 ordering-used-options-div"></div>
+                    <div class="my-1 p-0 ordering-answer-div d-none">
+                        {% for correct_character in question.correct %}
+                            <div class="ordering-option-button d-inline">
+                                <span class="ordering-option-text">{% if forloop.first %}{{ correct_character }}{% else %}{{ correct_character|lower }}{% endif %}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% elif question.options %}
                     {% for option in question.options %}
                         <div class="col-12 col-md-6 p-0">
-                            <div class="option-button" data-correct="{% if option.text == question.correct_text %}true{% else %}false{% endif %}">
-                                <span class="option-text{% if option.hide_text %} d-none{% endif %}"">{{ option.text }}</span>
+                            <div class="option-button" data-correct="{% if option.text == question.correct %}true{% else %}false{% endif %}">
+                                <span class="option-text{% if option.hide_text %} d-none{% endif %}">{{ option.text }}</span>
                                 {% if option.audio_url %}
                                     {% include "wordsandsentences/audio.html" with audio_url=option.audio_url %}
                                 {% endif %}
@@ -57,8 +83,8 @@
                         </div>
                     {% endfor %}
                 {% else %}
-                    <input type="text" class="answer-text form-control" data-answer="{{ question.correct_text }}"></input>
-                    <label class="d-none correct-answer-label my-1 fw-bold" style="color: #198217">{{ question.correct_text }}</label>
+                    <input type="text" class="answer-text form-control" data-answer="{{ question.correct }}"></input>
+                    <label class="d-none correct-answer-label my-1 fw-bold" style="color: #198217">{{ question.correct }}</label>
                 {% endif %}
             </div>
         </div>
@@ -83,6 +109,39 @@
             $("#btn_next").prop("disabled", previouslySelected)
         });
 
+        $(document).on("click", ".ordering-unused-options-div .ordering-option-button", function () {
+            if ($(this).hasClass("disabled")) {
+                return
+            }
+            const currentQuestionDiv = $(".question-div").not(".d-none")
+            $(this).appendTo(currentQuestionDiv.find(".ordering-used-options-div"))
+            orderingChanged(currentQuestionDiv)
+        });
+
+        $(document).on("click", ".ordering-used-options-div .ordering-option-button", function () {
+            if ($(this).hasClass("disabled")) {
+                return
+            }
+            const currentQuestionDiv = $(".question-div").not(".d-none")
+            $(this).appendTo(currentQuestionDiv.find(".ordering-unused-options-div"))
+            orderingChanged(currentQuestionDiv)
+        });
+
+        function orderingChanged(currentQuestionDiv) {
+            $("#btn_next").prop("disabled", currentQuestionDiv.find(".ordering-unused-options-div .ordering-option-button").length > 0)
+            currentQuestionDiv.find(".ordering-unused-options-div .ordering-option-text").each(function() {
+                $(this).text(capitalizeFirstLetter($(this).text()))
+            })
+            currentQuestionDiv.find(".ordering-used-options-div .ordering-option-text").each(function(i) {
+                if (i == 0) {
+                    $(this).text(capitalizeFirstLetter($(this).text()))
+                }
+                else {
+                    $(this).text($(this).text().toLowerCase())
+                }
+            })
+        }
+
         $(".answer-text").on("input", function() {
             const answerText = $(this)
             const userInput = answerText.val()
@@ -92,10 +151,11 @@
         $("#btn_next").click(function() {
             const nextButton = $(this)
             const currentQuestionDiv = $(".question-div").not(".d-none")
-            currentQuestionDiv.find(".option-button").addClass("disabled")
             const selectedOption = currentQuestionDiv.find(".option-button.selected")
             const enabledAnswerText = currentQuestionDiv.find(".answer-text:not(:disabled)")
+            const usedOrderingOptionButtons = currentQuestionDiv.find(".ordering-used-options-div .ordering-option-button:not(.disabled)")
             if (selectedOption.length) {
+                currentQuestionDiv.find(".option-button").addClass("disabled")
                 selectedOption.removeClass("selected")
                 currentQuestionDiv.find(".option-text").removeClass("d-none")
                 if (selectedOption.data("correct") == true) {
@@ -105,6 +165,21 @@
                 else {
                     selectedOption.addClass("incorrect")
                     currentQuestionDiv.find(".option-button[data-correct=true]").addClass("correct")
+                }
+            }
+            else if (usedOrderingOptionButtons.length) {
+                currentQuestionDiv.find(".ordering-option-button").addClass("disabled")
+                usedOrderingOptionTexts = []
+                usedOrderingOptionButtons.find(".ordering-option-text").each(function() {usedOrderingOptionTexts.push($(this).text())})
+                correctOrderingOptionTexts = []
+                currentQuestionDiv.find(".ordering-answer-div .ordering-option-text").each(function() {correctOrderingOptionTexts.push($(this).text())})
+                if (JSON.stringify(usedOrderingOptionTexts) == JSON.stringify(correctOrderingOptionTexts)) {
+                    usedOrderingOptionButtons.addClass("correct")
+                    correct_answers_count++
+                }
+                else {
+                    usedOrderingOptionButtons.addClass("incorrect")
+                    currentQuestionDiv.find(".ordering-answer-div").removeClass("d-none")
                 }
             }
             else if (enabledAnswerText.length) {
