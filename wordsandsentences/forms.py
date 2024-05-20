@@ -81,7 +81,7 @@ class ImportForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.layout = Layout(Div(Div("words_csv", css_class="col"), Div(HTML(f"<a href='{reverse_lazy("words_export")}' class='btn btn-info'>Export existing words</a>"), css_class="col-auto mb-3"), css_class="row align-items-end"), "audio_files")
+        self.helper.layout = Layout(Div(Div("words_csv", css_class="col"), Div(HTML(f"""<a href='{reverse_lazy("words_export")}' class='btn btn-info'>Export existing words</a>"""), css_class="col-auto mb-3"), css_class="row align-items-end"), "audio_files")
         self.helper.add_input(Submit('submit', "Upload", css_class="btn-secondary"))
 
     def clean(self):
