@@ -403,8 +403,8 @@ class WordsExportView(generic.View):
         writer = csv.writer(response)
         writer.writerow(["topic", "jyutping", "english", "notes", "is_sentence"])
         for topic in Topic.objects.all():
-            for word in topic.wordset.all():
+            for word in topic.word_set.all():
                 writer.writerow([word.topic.topic_name, word.jyutping, word.english, word.notes, "no"])
-            for sentence in topic.sentenceset.all():
-                writer.writerow([sentence.topic.topic_name, sentence.jyutping, sentence.english, sentence.notes, "no"])
+            for sentence in topic.sentence_set.all():
+                writer.writerow([sentence.topic.topic_name, sentence.jyutping, sentence.english, sentence.notes, "yes"])
         return response

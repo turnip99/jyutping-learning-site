@@ -212,5 +212,11 @@
                 nextButton.click()
             }
         });
+
+        $(window).on('beforeunload', function(){
+            if ($(".question-div").not(".d-none").length) {
+                return 'Are you sure you want to leave?';
+            }
+        });
     </script>
 {% endblock %}
