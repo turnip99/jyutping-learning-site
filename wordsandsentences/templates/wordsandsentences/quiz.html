@@ -44,7 +44,7 @@
     {% for question in questions %}
         <div class="question-div{% if not forloop.first %} d-none{% endif %}">
             <div class="row mb-1">
-                <div class="col-12 col-md-6 order-2 order-md-1">
+                <div class="col-12 col-md-6 col-lg-8 col-xl-10 order-2 order-md-1">
                     <h5>
                         {{ question.question_text }}
                         {% if question.question_audio_url %}
@@ -52,7 +52,7 @@
                         {% endif %}
                     </h5>
                 </div>
-                <div class="col-12 col-md-6 order-1 order-md-2 text-start text-md-end">Question {{ forloop.counter }}/{{ questions|length }}</div>    
+                <div class="col-12 col-md-6 col-lg-4 col-xl-2 order-1 order-md-2 text-start text-md-end">Question {{ forloop.counter }}/{{ questions|length }}</div>    
             </div>
             <div class="row mb-2 m-0">
                 {% if question.ordering_options %}
