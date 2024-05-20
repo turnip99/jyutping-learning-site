@@ -10,11 +10,16 @@
             border: 1px solid #333333;
         }
         .ordering-option-button {
-            margin: 0.1em;
+            margin: 0 0.1em;
             padding: 0.1em 0.4em;
             text-align: center;
             border: 1px solid #333333;
             border-radius: 0.2rem;
+        }
+        .ordering-div {
+            margin: 0.1em 0;
+            padding: 0;
+            line-height: 1.9rem;
         }
         .ordering-unused-options-div > .ordering-option-button {
             background-color: #00000010;
@@ -56,15 +61,15 @@
             </div>
             <div class="row mb-2 m-0">
                 {% if question.ordering_options %}
-                    <div class="my-1 p-0 ordering-unused-options-div">
+                    <div class="ordering-div ordering-unused-options-div">
                         {% for ordering_option in question.ordering_options %}
                             <div class="ordering-option-button d-inline">
                                 <span class="ordering-option-text">{{ ordering_option }}</span>
                             </div>
                         {% endfor %}
                     </div>
-                    <div class="my-1 p-0 ordering-used-options-div"></div>
-                    <div class="my-1 p-0 ordering-answer-div d-none">
+                    <div class="ordering-div ordering-used-options-div"></div>
+                    <div class="ordering-div ordering-answer-div d-none">
                         {% for correct_character in question.correct %}
                             <div class="ordering-option-button d-inline">
                                 <span class="ordering-option-text">{% if forloop.first %}{{ correct_character }}{% else %}{{ correct_character|lower }}{% endif %}</span>
