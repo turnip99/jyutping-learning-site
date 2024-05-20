@@ -239,6 +239,14 @@ class TopicCreateView(generic.CreateView):
     form_class = TopicForm
     success_url = reverse_lazy("edit_list")
 
+    def get_initial(self):
+        initial = super().get_initial()
+        if last_topic := Topic.objects.all().last():
+            initial["loc"] = last_topic.loc + 10
+        else:
+            initial["loc"] = 0
+        return initial
+
 
 class TopicUpdateView(generic.UpdateView):
     template_name = "wordsandsentences/edit/form.html"
@@ -262,6 +270,10 @@ class WordCreateView(generic.CreateView):
     def get_initial(self):
         initial = super().get_initial()
         initial["topic"] = Topic.objects.get(pk=self.kwargs["topic_pk"])
+        if last_word := Word.objects.filter(topic_id=self.kwargs["topic_pk"]).last():
+            initial["loc"] = last_word.loc + 10
+        else:
+            initial["loc"] = 0
         return initial
 
 
@@ -287,6 +299,10 @@ class SentenceCreateView(generic.CreateView):
     def get_initial(self):
         initial = super().get_initial()
         initial["topic"] = Topic.objects.get(pk=self.kwargs["topic_pk"])
+        if last_sentence := Sentence.objects.filter(topic_id=self.kwargs["topic_pk"]).last():
+            initial["loc"] = last_sentence.loc + 10
+        else:
+            initial["loc"] = 0
         return initial
 
 
