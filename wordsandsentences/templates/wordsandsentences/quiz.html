@@ -36,10 +36,10 @@
         .option-button.selected {
             background-color: var(--content-bg-colour);
         }
-        .option-button.correct, .ordering-option-button.correct, .answer-text.correct {
+        .option-button.correct, .ordering-option-button.correct, .answer-text.correct, #progress_bar_correct {
             background-color: #23cc21;
         }
-        .option-button.incorrect, .ordering-option-button.incorrect, .answer-text.incorrect {
+        .option-button.incorrect, .ordering-option-button.incorrect, .answer-text.incorrect, #progress_bar_incorrect {
             background-color: #cc2121;
         }
     </style>
@@ -96,11 +96,18 @@
     {% endfor %}
     <button id="btn_next" class="btn btn-primary w-100 mb-3" disabled>Next &#x2192;</button>
     <div id="div_results" class="info-box d-none mb-3"></div>
+
+    <div class="progress">
+        <div class="progress-bar" id="progress_bar_correct" style="width: 0%"></div>
+        <div class="progress-bar" id="progress_bar_incorrect" style="width: 0%"></div>
+    </div>
 {% endblock %}
 
 {% block scripts %}
     <script>
-        correct_answers_count = 0
+        let questonCount = parseInt("{{ questions|length }}")
+        let correctAnswersCount = 0
+        let incorrectAnswersCount = 0
 
         $(".option-button").click(function() {
             if ($(this).hasClass("disabled")) {
@@ -154,12 +161,14 @@
                 currentQuestionDiv.find(".option-text").removeClass("d-none")
                 if (selectedOption.data("correct") == true) {
                     selectedOption.addClass("correct")
-                    correct_answers_count++
+                    correctAnswersCount++
                 }
                 else {
                     selectedOption.addClass("incorrect")
                     currentQuestionDiv.find(".option-button[data-correct=true]").addClass("correct")
+                    incorrectAnswersCount++
                 }
+                updateProgressBar()
             }
             else if (usedOrderingOptionButtons.length) {
                 currentQuestionDiv.find(".ordering-option-button").addClass("disabled")
@@ -169,22 +178,26 @@
                 currentQuestionDiv.find(".ordering-answer-div .ordering-option-text").each(function() {correctOrderingOptionTexts.push($(this).text())})
                 if (JSON.stringify(usedOrderingOptionTexts) == JSON.stringify(correctOrderingOptionTexts)) {
                     usedOrderingOptionButtons.addClass("correct")
-                    correct_answers_count++
+                    correctAnswersCount++
                 }
                 else {
                     usedOrderingOptionButtons.addClass("incorrect")
                     currentQuestionDiv.find(".ordering-answer-div").removeClass("d-none")
+                    incorrectAnswersCount++
                 }
+                updateProgressBar()
             }
             else if (enabledAnswerText.length) {
                 enabledAnswerText.prop("disabled", true)
                 if (enabledAnswerText.val().toLowerCase() == enabledAnswerText.data("answer").toLowerCase()) {
                     enabledAnswerText.addClass("correct")
-                    correct_answers_count += 1
+                    correctAnswersCount += 1
                 }
                 else {
                     enabledAnswerText.addClass("incorrect").next(".correct-answer-label").removeClass("d-none")
+                    incorrectAnswersCount++
                 }
+                updateProgressBar()
             }
             else {
                 currentQuestionDiv.addClass("d-none")
@@ -195,7 +208,7 @@
                 }
                 else {
                     nextButton.addClass("d-none")
-                    $("#div_results").removeClass("d-none").html(`You got ${correct_answers_count} out of {{ questions|length }} questions correct!`)
+                    $("#div_results").removeClass("d-none").html(`You got ${correctAnswersCount} out of {{ questions|length }} questions correct!`)
                 }
             }
         });
@@ -212,5 +225,12 @@
                 return 'Are you sure you want to leave?';
             }
         });
+
+        function updateProgressBar() {
+            correctPercentage = correctAnswersCount * 100 / questonCount
+            incorrectPercentage = incorrectAnswersCount * 100 / questonCount
+            $("#progress_bar_correct").css("width", `${correctPercentage}%`)
+            $("#progress_bar_incorrect").css("width", `${incorrectPercentage}%`)
+        }
     </script>
 {% endblock %}
