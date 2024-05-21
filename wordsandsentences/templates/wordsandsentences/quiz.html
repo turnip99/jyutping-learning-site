@@ -72,7 +72,7 @@
                     <div class="ordering-div ordering-answer-div d-none">
                         {% for correct_character in question.correct %}
                             <div class="ordering-option-button d-inline">
-                                <span class="ordering-option-text">{% if forloop.first %}{{ correct_character }}{% else %}{{ correct_character|lower }}{% endif %}</span>
+                                <span class="ordering-option-text">{{ correct_character }}</span>
                             </div>
                         {% endfor %}
                     </div>
@@ -134,17 +134,6 @@
 
         function orderingChanged(currentQuestionDiv) {
             $("#btn_next").prop("disabled", currentQuestionDiv.find(".ordering-unused-options-div .ordering-option-button").length > 0)
-            currentQuestionDiv.find(".ordering-unused-options-div .ordering-option-text").each(function() {
-                $(this).text(capitalizeFirstLetter($(this).text()))
-            })
-            currentQuestionDiv.find(".ordering-used-options-div .ordering-option-text").each(function(i) {
-                if (i == 0) {
-                    $(this).text(capitalizeFirstLetter($(this).text()))
-                }
-                else {
-                    $(this).text($(this).text().toLowerCase())
-                }
-            })
         }
 
         $(".answer-text").on("input", function() {

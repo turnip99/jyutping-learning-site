@@ -33,8 +33,8 @@ class QuizView(generic.FormView):
 
     @staticmethod
     def get_question_type(include_audio):
-        question_int = random.randint(0, 140 if include_audio else 99)
-        if question_int > 116:
+        question_int = random.randint(0, 135 if include_audio else 99)
+        if question_int > 115:
             return "audio_to_tone"
         elif question_int > 99:
             return "audio_to_not_tone"
@@ -186,8 +186,8 @@ class QuizView(generic.FormView):
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
                     used_sentence_ids.append(sentence.id)
                     sentence_word_array = sentence.jyutping.split(" ")
-                    correct_word_jyutping = random.choice(sentence_word_array).title()
-                    question_text = f"""Fill in the blank: {' '.join(["_" if sentence_word.title() == correct_word_jyutping else sentence_word for sentence_word in sentence_word_array])}."""
+                    correct_word_jyutping = random.choice(sentence_word_array)
+                    question_text = f"""Fill in the blank: {' '.join(["_" if sentence_word == correct_word_jyutping else sentence_word for sentence_word in sentence_word_array])}."""
                     incorrect_words = self.get_incorrect_words(None, False, exclude_ids=Word.objects.filter(jyutping=correct_word_jyutping).values_list("id", flat=True), single_jyutping_word_only=True)
                     options = [{"text": word_jyutping, "audio_url": None, "hide_text": False} for word_jyutping in [incorrect_word.jyutping for incorrect_word in incorrect_words] + [correct_word_jyutping]]
                     random.shuffle(options)
@@ -196,15 +196,15 @@ class QuizView(generic.FormView):
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
                     used_sentence_ids.append(sentence.id)
                     sentence_word_array = sentence.jyutping.split(" ")
-                    correct_word_jyutping = random.choice(sentence_word_array).title()
-                    question_text = f"""Fill in the blank: {' '.join(["_" if sentence_word.title() == correct_word_jyutping else sentence_word for sentence_word in sentence_word_array])}."""
+                    correct_word_jyutping = random.choice(sentence_word_array)
+                    question_text = f"""Fill in the blank: {' '.join(["_" if sentence_word == correct_word_jyutping else sentence_word for sentence_word in sentence_word_array])}."""
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word_jyutping, "options": None, "ordering_options": None})
                 case "words_to_ordered_sentence":
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
                     used_sentence_ids.append(sentence.id)
                     sentence_word_array = sentence.jyutping.split(" ")
                     question_text = f"Order these words to form the Jyutping representation of '{sentence.english}'."
-                    sentence_word_array_shuffled = [sentence_word.title() for sentence_word in sentence_word_array]
+                    sentence_word_array_shuffled = [sentence_word for sentence_word in sentence_word_array]
                     random.shuffle(sentence_word_array_shuffled)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": sentence_word_array, "options": None, "ordering_options": sentence_word_array_shuffled})
                 case _:

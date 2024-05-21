@@ -15,7 +15,7 @@
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ topic.pk }}" aria-expanded="true" aria-controls="collapse_{{ topic.pk }}">
-                        {{ topic.topic_name}}
+                        {{ topic.topic_name|capfirst }}
                     </button>
                 </h2>
                 <div id="collapse_{{ topic.pk }}" class="accordion-collapse collapse hide" data-bs-parent="#words_accordion">
@@ -32,8 +32,8 @@
                             <tbody>
                                 {% for word in words_and_sentences.words %}
                                     <tr>
-                                        <td>{{ word.jyutping|lower }}</td>
-                                        <td>{{ word.english|lower }}</td>
+                                        <td>{{ word.jyutping }}</td>
+                                        <td>{{ word.english }}</td>
                                         <td>{% if word.notes %}{{ word.notes }}{% else %}-{% endif %}</td>
                                         <td>
                                             {% if word.audio_file %}
@@ -42,6 +42,14 @@
                                                 -
                                             {% endif %}
                                         </td>
+                                    </tr>
+                                {% endfor %}
+                                {% for sentence in words_and_sentences.sentences %}
+                                    <tr>
+                                        <td>{{ sentence.jyutping }}</td>
+                                        <td>{{ sentence.english }}</td>
+                                        <td>{% if sentence.notes %}{{ sentence.notes }}{% else %}-{% endif %}</td>
+                                        <td>-</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
