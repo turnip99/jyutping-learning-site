@@ -32,8 +32,8 @@
                             <tbody>
                                 {% for word in words_and_sentences.words %}
                                     <tr>
-                                        <td>{{ word.jyutping }}</td>
-                                        <td>{{ word.english }}</td>
+                                        <td>{{ word.jyutping|lower }}</td>
+                                        <td>{{ word.english|lower }}</td>
                                         <td>{% if word.notes %}{{ word.notes }}{% else %}-{% endif %}</td>
                                         <td>
                                             {% if word.audio_file %}

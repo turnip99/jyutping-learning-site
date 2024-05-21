@@ -1,12 +1,6 @@
 from django.contrib import admin
-from import_export.admin import ImportExportModelAdmin
-from import_export.formats.base_formats import CSV
 
 from .models import *
-
-
-class CustomImportExportModelAdmin(ImportExportModelAdmin):
-  formats = [CSV]
 
 
 class WordInline(admin.TabularInline):
@@ -25,10 +19,10 @@ class TopicAdmin(admin.ModelAdmin):
 
 
 @admin.register(Word)
-class WordAdmin(CustomImportExportModelAdmin):
+class WordAdmin(admin.ModelAdmin):
   pass
 
 
 @admin.register(Sentence)
-class SentenceAdmin(CustomImportExportModelAdmin):
+class SentenceAdmin(admin.ModelAdmin):
   pass
