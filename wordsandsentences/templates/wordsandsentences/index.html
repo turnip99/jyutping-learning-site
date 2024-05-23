@@ -41,6 +41,7 @@
                                     <th>English</th>
                                     <th>Notes</th>
                                     <th>Listen</th>
+                                    <th class="d-none d-lg-table-cell">Edit</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -56,6 +57,7 @@
                                                 -
                                             {% endif %}
                                         </td>
+                                        <td class="d-none d-lg-table-cell"><a href="{% url 'word_update' pk=word.pk %}" style="text-decoration: none;">&#9998;</a></td>
                                     </tr>
                                 {% endfor %}
                                 {% for sentence in words_and_sentences.sentences %}
@@ -64,6 +66,7 @@
                                         <td data-searchable="{{ sentence.english|lower }}">{{ sentence.english }}</td>
                                         <td>{% if sentence.notes %}{{ sentence.notes }}{% else %}-{% endif %}</td>
                                         <td>-</td>
+                                        <td class="d-none d-lg-table-cell"><a href="{% url 'sentence_update' pk=sentence.pk %}" style="text-decoration: none;">&#9998;</a></td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
