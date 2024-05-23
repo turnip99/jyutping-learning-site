@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 
+{% block styles %}
+    <style>
+        td.searched {
+            background-color: var(--content-bg-colour);
+
+        }
+        td.searched-scrolled {
+            background-color: var(--content-border-colour);
+        }
+    </style>
+{% endblock %}
+
 {% block main %}
     <a href="{% url 'quiz' %}" class="btn btn-primary w-100 mb-1">Start quiz</a>
     {% if request.user.is_staff %}
@@ -10,6 +22,8 @@
         <a href="{% url 'admin:index' %}" class="btn btn-danger w-100 mb-1">Django admin</a>
     {% endif %}
 
+    <input type="text" id="searchBox" class="form-control sticky-top" placeholder="Search for a word or sentence and press enter" autofocus></input>
+
     <div class="accordion" id="words_accordion">
         {% for topic, words_and_sentences in topic_dict.items %}
             <div class="accordion-item">
@@ -18,7 +32,7 @@
                         {{ topic.topic_name|capfirst }}
                     </button>
                 </h2>
-                <div id="collapse_{{ topic.pk }}" class="accordion-collapse collapse hide" data-bs-parent="#words_accordion">
+                <div id="collapse_{{ topic.pk }}" class="accordion-collapse collapse" data-bs-parent="#words_accordion">
                     <div class="accordion-body table-responsive">
                         <table class="table">
                             <thead>
@@ -32,8 +46,8 @@
                             <tbody>
                                 {% for word in words_and_sentences.words %}
                                     <tr>
-                                        <td>{{ word.jyutping }}</td>
-                                        <td>{{ word.english }}</td>
+                                        <td data-searchable="{{ word.jyutping|lower }}">{{ word.jyutping }}</td>
+                                        <td data-searchable="{{ word.english|lower }}">{{ word.english }}</td>
                                         <td>{% if word.notes %}{{ word.notes }}{% else %}-{% endif %}</td>
                                         <td>
                                             {% if word.audio_file %}
@@ -46,8 +60,8 @@
                                 {% endfor %}
                                 {% for sentence in words_and_sentences.sentences %}
                                     <tr>
-                                        <td>{{ sentence.jyutping }}</td>
-                                        <td>{{ sentence.english }}</td>
+                                        <td data-searchable="{{ sentence.jyutping|lower }}">{{ sentence.jyutping }}</td>
+                                        <td data-searchable="{{ sentence.english|lower }}">{{ sentence.english }}</td>
                                         <td>{% if sentence.notes %}{{ sentence.notes }}{% else %}-{% endif %}</td>
                                         <td>-</td>
                                     </tr>
@@ -59,4 +73,45 @@
             </div>
         {% endfor %}
     </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        matchingItems = []
+        searchIndex = 0
+        lastSearchedText = ""
+
+        $("#searchBox").keyup(function(e) {
+            const searchBox = $(this)
+            const searchText = $(this).val().toLowerCase()
+            if (e.which == 13 && searchText.length) {
+                if (searchText != lastSearchedText) {
+                    $("#words_accordion td").removeClass("searched").removeClass("searched-scrolled")
+                    matchingItems = $(`#words_accordion td[data-searchable*='${searchText}']`)
+                    matchingItems.addClass("searched")
+                    searchIndex = 0
+                    lastSearchedText = searchText
+                }
+                if (matchingItems.length) {
+                    scrollToSearch()
+                }
+            }
+        });
+
+        function scrollToSearch() {
+            searchIndex++
+            if (searchIndex >= matchingItems.length) {
+                searchIndex = 0
+            }
+            $("#words_accordion td").removeClass("searched-scrolled")
+            const scrollToItem = matchingItems[searchIndex]
+            $(scrollToItem).addClass("searched-scrolled")
+            const scrollToAccordion = $(scrollToItem).closest(".accordion-collapse")
+            if (!scrollToAccordion.hasClass("show")) {
+                $(".accordion-collapse").removeClass("show")
+                scrollToAccordion.addClass("show")
+            }
+            scrollToItem.scrollIntoView({block: 'center'})
+        }
+    </script>
 {% endblock %}
