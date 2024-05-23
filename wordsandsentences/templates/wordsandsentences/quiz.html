@@ -201,10 +201,11 @@
             }
             else {
                 currentQuestionDiv.addClass("d-none")
-                const nextQuestion = currentQuestionDiv.next(".question-div")
-                if (nextQuestion.length) {
-                    nextQuestion.removeClass("d-none")
+                const nextQuestionDiv = currentQuestionDiv.next(".question-div")
+                if (nextQuestionDiv.length) {
+                    nextQuestionDiv.removeClass("d-none")
                     nextButton.prop("disabled", true)
+                    nextQuestionDiv.find(".answer-text").focus()
                 }
                 else {
                     nextButton.addClass("d-none")

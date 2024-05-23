@@ -145,7 +145,8 @@ class QuizView(generic.FormView):
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word.jyutping, "options": options, "ordering_options": None})
                 case "e_to_j_text":
-                    correct_word, is_sentence = self.get_random_word_or_sentence(exclude_word_ids=used_word_ids, exclude_sentence_ids=used_sentence_ids)
+                    words_with_duplicate_english = Word.objects.filter(english__in=list(Word.objects.values_list("english", flat=True).annotate(english_count=Count("english")).filter(english_count__gte=2)))
+                    correct_word, is_sentence = self.get_random_word_or_sentence(exclude_word_ids=list(words_with_duplicate_english.values_list("id", flat=True)) + used_word_ids, exclude_sentence_ids=used_sentence_ids)
                     if is_sentence:
                         used_sentence_ids.append(correct_word.id)
                     else:
@@ -196,8 +197,9 @@ class QuizView(generic.FormView):
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
                     used_sentence_ids.append(sentence.id)
                     sentence_word_array = sentence.jyutping.split(" ")
-                    correct_word_jyutping = random.choice(sentence_word_array)
-                    question_text = f"""Fill in the blank: {' '.join(["_" if sentence_word == correct_word_jyutping else sentence_word for sentence_word in sentence_word_array])}."""
+                    correct_word_index = random.choice(range(len(sentence_word_array)))
+                    correct_word_jyutping = sentence_word_array[correct_word_index]
+                    question_text = f"""Fill in the blank: {' '.join(["_" if i == correct_word_index else sentence_word for i, sentence_word in enumerate(sentence_word_array)])}."""
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word_jyutping, "options": None, "ordering_options": None})
                 case "words_to_ordered_sentence":
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
