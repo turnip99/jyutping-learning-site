@@ -85,26 +85,33 @@
         lastSearchedText = ""
 
         $("#searchBox").keyup(function(e) {
-            const searchBox = $(this)
             const searchText = $(this).val().toLowerCase()
+            $("#words_accordion td").removeClass("searched").removeClass("searched-scrolled")
             if (e.which == 13 && searchText.length) {
                 if (searchText != lastSearchedText) {
-                    $("#words_accordion td").removeClass("searched").removeClass("searched-scrolled")
                     matchingItems = $(`#words_accordion td[data-searchable*='${searchText}']`)
                     matchingItems.addClass("searched")
                     searchIndex = -1
                     lastSearchedText = searchText
                 }
                 if (matchingItems.length) {
-                    scrollToSearch()
+                    scrollToSearch(e.shiftKey)
                 }
             }
         });
 
-        function scrollToSearch() {
-            searchIndex++
-            if (searchIndex >= matchingItems.length) {
-                searchIndex = 0
+        function scrollToSearch(shiftKey) {
+            if (shiftKey) {
+                searchIndex--
+                if (searchIndex < 0) {
+                    searchIndex = matchingItems.length - 1
+                }
+            }
+            else {
+                searchIndex++
+                if (searchIndex >= matchingItems.length) {
+                    searchIndex = 0
+                }
             }
             $("#words_accordion td").removeClass("searched-scrolled")
             const scrollToItem = matchingItems[searchIndex]

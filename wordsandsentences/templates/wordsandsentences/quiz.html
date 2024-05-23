@@ -88,7 +88,7 @@
                         </div>
                     {% endfor %}
                 {% else %}
-                    <input type="text" class="answer-text form-control" data-answer="{{ question.correct }}"></input>
+                    <input type="text" class="answer-text form-control" data-answer="{{ question.correct }}"{% if forloop.first %} autofocus{% endif %}></input>
                     <label class="d-none correct-answer-label my-1 fw-bold" style="color: #198217">{{ question.correct }}</label>
                 {% endif %}
             </div>
