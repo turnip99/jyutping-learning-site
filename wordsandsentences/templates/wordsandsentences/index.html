@@ -22,7 +22,7 @@
         <a href="{% url 'admin:index' %}" class="btn btn-danger w-100 mb-1">Django admin</a>
     {% endif %}
 
-    <input type="text" id="searchBox" class="form-control sticky-top" placeholder="Search for a word or sentence and press enter" autofocus></input>
+    <input type="text" id="searchBox" class="form-control sticky-top mt-2" placeholder="Search for a word or sentence and press enter" autofocus></input>
 
     <div class="accordion" id="words_accordion">
         {% for topic, words_and_sentences in topic_dict.items %}
@@ -81,7 +81,7 @@
 {% block scripts %}
     <script>
         matchingItems = []
-        searchIndex = 0
+        searchIndex = -1
         lastSearchedText = ""
 
         $("#searchBox").keyup(function(e) {
@@ -92,7 +92,7 @@
                     $("#words_accordion td").removeClass("searched").removeClass("searched-scrolled")
                     matchingItems = $(`#words_accordion td[data-searchable*='${searchText}']`)
                     matchingItems.addClass("searched")
-                    searchIndex = 0
+                    searchIndex = -1
                     lastSearchedText = searchText
                 }
                 if (matchingItems.length) {
