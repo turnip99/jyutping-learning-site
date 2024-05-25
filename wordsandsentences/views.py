@@ -187,8 +187,9 @@ class QuizView(generic.FormView):
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
                     used_sentence_ids.append(sentence.id)
                     sentence_word_array = sentence.jyutping.replace("?", "").split(" ")
-                    correct_word_jyutping = random.choice(sentence_word_array)
-                    question_text = f"""Fill in the blank: '{' '.join(["_" if sentence_word == correct_word_jyutping else sentence_word for sentence_word in sentence_word_array])}{"?" if "?" in sentence.jyutping else ""}'."""
+                    correct_word_index = random.choice(range(len(sentence_word_array)))
+                    correct_word_jyutping = sentence_word_array[correct_word_index]
+                    question_text = f"""Fill in the blank: '{' '.join(["_" if i == correct_word_index else sentence_word for i, sentence_word in enumerate(sentence_word_array)])}{"?" if "?" in sentence.jyutping else ""}'."""
                     incorrect_words = self.get_incorrect_words(None, False, exclude_ids=Word.objects.filter(jyutping=correct_word_jyutping).values_list("id", flat=True), single_jyutping_word_only=True)
                     options = [{"text": word_jyutping, "audio_url": None, "hide_text": False} for word_jyutping in [incorrect_word.jyutping for incorrect_word in incorrect_words] + [correct_word_jyutping]]
                     random.shuffle(options)
