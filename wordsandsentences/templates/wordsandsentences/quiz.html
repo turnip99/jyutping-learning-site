@@ -68,13 +68,14 @@
                             </div>
                         {% endfor %}
                     </div>
-                    <div class="ordering-div ordering-used-options-div"></div>
+                    <div class="ordering-div ordering-used-options-div{% if question.include_question_mark %} has-question-mark{% endif %}"></div>
                     <div class="ordering-div ordering-answer-div d-none">
                         {% for correct_character in question.correct %}
                             <div class="ordering-option-button d-inline">
                                 <span class="ordering-option-text">{{ correct_character }}</span>
                             </div>
                         {% endfor %}
+                        {% if question.include_question_mark %}?{% endif %}
                     </div>
                 {% elif question.options %}
                     {% for option in question.options %}
@@ -140,7 +141,17 @@
         });
 
         function orderingChanged(currentQuestionDiv) {
-            $("#btn_next").prop("disabled", currentQuestionDiv.find(".ordering-unused-options-div .ordering-option-button").length > 0)
+            const allReordered = currentQuestionDiv.find(".ordering-unused-options-div .ordering-option-button").length == 0
+            $("#btn_next").prop("disabled", !allReordered)
+            const questionMarkDiv = currentQuestionDiv.find(".ordering-used-options-div.has-question-mark")
+            if (questionMarkDiv.length) {
+                if (allReordered) {
+                    questionMarkDiv.append("<span class='question-mark'>?</span>")
+                }
+                else {
+                    questionMarkDiv.find(".question-mark").remove()
+                }
+            }
         }
 
         $(".answer-text").on("input", function() {
@@ -189,7 +200,7 @@
             }
             else if (enabledAnswerText.length) {
                 enabledAnswerText.prop("disabled", true)
-                if (enabledAnswerText.val().toLowerCase() == enabledAnswerText.data("answer").toLowerCase()) {
+                if (enabledAnswerText.val().toLowerCase().replaceAll("?", "") == enabledAnswerText.data("answer").toLowerCase().replaceAll("?", "")) {
                     enabledAnswerText.addClass("correct")
                     correctAnswersCount += 1
                 }
