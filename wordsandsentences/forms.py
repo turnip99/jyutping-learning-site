@@ -51,9 +51,19 @@ class WordForm(LearningItemForm):
 
 
 class SentenceForm(LearningItemForm):
+    responses = forms.ModelMultipleChoiceField(queryset=Sentence.objects.all(), required=False, help_text="Hold Ctrl to select multiple.")
+
     class Meta(LearningItemForm.Meta):
         abstract = False
         model = Sentence
+        fields = LearningItemForm.Meta.fields + ["response_to"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            self.fields["response_to"].queryset = self.fields["response_to"].queryset.exclude(id=self.instance.id)
+            self.fields["responses"].queryset = self.fields["response_to"].queryset
+
 
 
 class MultipleFileInput(forms.FileInput):

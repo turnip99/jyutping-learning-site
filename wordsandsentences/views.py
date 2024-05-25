@@ -307,6 +307,12 @@ class SentenceCreateView(generic.CreateView):
         else:
             initial["loc"] = 0
         return initial
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.responses.set(form.cleaned_data["responses"])
+        self.object.save()
+        return response
 
 
 class SentenceUpdateView(generic.UpdateView):
@@ -314,6 +320,17 @@ class SentenceUpdateView(generic.UpdateView):
     model = Sentence
     form_class = SentenceForm
     success_url = reverse_lazy("edit_list")
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["responses"] = self.object.responses.all()
+        return initial
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.responses.set(form.cleaned_data["responses"])
+        self.object.save()
+        return response
 
 
 class SentenceDeleteView(generic.DeleteView):
@@ -391,6 +408,18 @@ class ImportView(generic.FormView):
                             model_class.objects.bulk_create(objs_to_create)
                         if objs_to_update:
                             model_class.objects.bulk_update(objs_to_update, ["english", "notes", "loc"])
+                    for topic, sentence_rows in sentences_by_topic.items():
+                        for sentence_row in sentence_rows:
+                            if sentence_row["response_to"]:
+                                response_to_obj_list = []
+                                for response_to in sentence_row["response_to"].replace(", ", ",").split(","):
+                                    try:
+                                        response_to_obj = Sentence.objects.get(jyutping=response_to)
+                                    except Sentence.MultipleObjectsReturned:
+                                        response_to_obj = Sentence.objects.get(topic__topic_name=topic, jyutping=response_to)
+                                    response_to_obj_list.append(response_to_obj)
+                                Sentence.objects.get(topic__topic_name=topic, jyutping=sentence_row["jyutping"]).response_to.set(response_to_obj_list)
+                                
                 except Exception as e:
                     return render(self.request, self.template_name, {"form": form, "import_error": f"Error in CSV: {e}"})
         if audio_files := form.cleaned_data["audio_files"]:
@@ -420,10 +449,10 @@ class WordsExportView(generic.View):
             headers={"Content-Disposition": f"attachment; filename=Jyutping words {datetime.now().date().strftime('%d-%m-%Y')}.csv"}
         )
         writer = csv.writer(response)
-        writer.writerow(["topic", "jyutping", "english", "notes", "is_sentence"])
+        writer.writerow(["topic", "jyutping", "english", "notes", "is_sentence", "response_to"])
         for topic in Topic.objects.all():
             for word in topic.word_set.all():
-                writer.writerow([word.topic.topic_name, word.jyutping, word.english, word.notes, "no"])
+                writer.writerow([word.topic.topic_name, word.jyutping, word.english, word.notes, "no", ""])
             for sentence in topic.sentence_set.all():
-                writer.writerow([sentence.topic.topic_name, sentence.jyutping, sentence.english, sentence.notes, "yes"])
+                writer.writerow([sentence.topic.topic_name, sentence.jyutping, sentence.english, sentence.notes, "yes", ", ".join([response_to_sentence.jyutping for response_to_sentence in sentence.response_to.all()])])
         return response

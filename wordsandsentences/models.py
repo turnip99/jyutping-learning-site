@@ -35,4 +35,4 @@ class Word(LearningItem):
 
 
 class Sentence(LearningItem):
-    pass
+    response_to = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="responses", help_text="Hold Ctrl to select multiple.")
