@@ -57,8 +57,8 @@
                                 {% for sentence in words_and_sentences.sentences %}
                                     <tr>
                                         <td data-searchable="{{ sentence.jyutping|lower }}">{{ sentence.jyutping }}</td>
-                                        <td data-searchable="{{ sentence.english|lower }}">{{ sentence.english }}</td>
                                         <td data-searchable="{{ sentence.cantonese }}">{% if sentence.cantonese %}{{ sentence.cantonese }}{% else %}-{% endif %}</td>
+                                        <td data-searchable="{{ sentence.english|lower }}">{{ sentence.english }}</td>
                                         <td>{% if sentence.notes %}{{ sentence.notes }}{% else %}-{% endif %}</td>
                                         <td class="d-none d-lg-table-cell"><a href="{% url 'sentence_update' pk=sentence.pk %}" style="text-decoration: none;">&#9998;</a></td>
                                     </tr>
