@@ -5,6 +5,7 @@ import re
 from datetime import datetime
 from io import BytesIO, StringIO
 
+from django.conf import settings
 from django.core.files import File
 from django.db import transaction
 from django.db.models import Q, Count
@@ -180,13 +181,14 @@ class QuizView(generic.FormView):
                 case "e_to_j_text":
                     correct_word, is_sentence = self.get_random_word_or_sentence(exclude_word_ids=used_word_ids, exclude_sentence_ids=used_sentence_ids)
                     if is_sentence:
-                        correct_list = list(Sentence.objects.filter(english=correct_word.english).values_list("jyutping", flat=True))
-                        for c in correct_list:
+                        correct_qs = Sentence.objects.filter(english=correct_word.english)
+                        for c in correct_qs:
                             used_sentence_ids.append(c.id)
                     else:
-                        correct_list = list(Word.objects.filter(english=correct_word.english).values_list("jyutping", flat=True))
-                        for c in correct_list:
+                        correct_qs = Word.objects.filter(english=correct_word.english)
+                        for c in correct_qs:
                             used_word_ids.append(c.id)
+                    correct_list = list(correct_qs.values_list("jyutping", flat=True))
                     question_text = f"What is the Jyutping representation of '{correct_word.english}'?"
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_list, "options": None, "ordering_options": None})
                 case "audio_to_tone":
@@ -219,8 +221,11 @@ class QuizView(generic.FormView):
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word.jyutping, "options": options, "ordering_options": None})
                 case "sentence_to_response_buttons":
+                    if len(set(sentence_ids_without_responses + sentence_ids_with_too_many_responses + used_sentence_ids)) == sentence_count:
+                        # Fall back on a basic question if we have run out of words with responses.
+                        return generate_question_dict("j_to_e")
                     question_sentence = self.get_random_sentence(exclude_ids=sentence_ids_without_responses + sentence_ids_with_too_many_responses + used_sentence_ids)
-                    used_sentence_ids.append(question_sentence)
+                    used_sentence_ids.append(question_sentence.id)
                     question_responses = question_sentence.responses.all()
                     correct_sentence = random.choice(question_responses)
                     question_text = f"Which of these would be a response to '{question_sentence.jyutping}'?"
@@ -229,14 +234,18 @@ class QuizView(generic.FormView):
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_sentence.jyutping, "options": options, "ordering_options": None})
                 case "sentence_to_response_text":
+                    if len(set(sentence_ids_without_responses + used_sentence_ids)) == sentence_count:
+                        return generate_question_dict("j_to_e")
                     question_sentence = self.get_random_sentence(exclude_ids=sentence_ids_without_responses + used_sentence_ids)
-                    used_sentence_ids.append(question_sentence)
+                    used_sentence_ids.append(question_sentence.id)
                     question_responses = question_sentence.responses.all()
                     question_text = f"What would be a response to '{question_sentence.jyutping}'?"
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": list(question_responses.values_list("jyutping", flat=True)), "options": None, "ordering_options": None})
                 case "response_to_sentence_buttons":
+                    if len(set(sentence_ids_without_response_to + sentences_ids_with_too_many_response_to + used_sentence_ids)) == sentence_count:
+                        return generate_question_dict("j_to_e")
                     question_sentence = self.get_random_sentence(exclude_ids=sentence_ids_without_response_to + sentences_ids_with_too_many_response_to + used_sentence_ids)
-                    used_sentence_ids.append(question_sentence)
+                    used_sentence_ids.append(question_sentence.id)
                     question_response_to = question_sentence.response_to.all()
                     correct_sentence = random.choice(question_response_to)
                     question_text = f"Which of these would '{question_sentence.jyutping}' be a response to?"
@@ -245,8 +254,10 @@ class QuizView(generic.FormView):
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_sentence.jyutping, "options": options, "ordering_options": None})
                 case "response_to_sentence_text":
+                    if len(set(sentence_ids_without_response_to + used_sentence_ids)) == sentence_count:
+                        return generate_question_dict("j_to_e")
                     question_sentence = self.get_random_sentence(exclude_ids=sentence_ids_without_response_to + used_sentence_ids)
-                    used_sentence_ids.append(question_sentence)
+                    used_sentence_ids.append(question_sentence.id)
                     question_response_to = question_sentence.response_to.all()
                     question_text = f"What would '{question_sentence.jyutping} be a response to'?"
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": list(question_response_to.values_list("jyutping", flat=True)), "options": None, "ordering_options": None})
@@ -281,14 +292,16 @@ class QuizView(generic.FormView):
                     raise Exception(f"Unknown question type {question_type}")
             
         for _question_number in range(question_count):
-            for attempt_count in range(5):
-                try:
-                    generate_question_dict(self.get_question_type(include_audio))
-                    break
-                except Exception as e:
-                    print(e)
-                    if attempt_count == 4:
-                        raise Exception("Quiz generation failed; try adding more words to the database.")
+            if settings.DEBUG:
+                generate_question_dict(self.get_question_type(include_audio))
+            else:
+                for attempt_count in range(5):
+                    try:
+                        generate_question_dict(self.get_question_type(include_audio))
+                        break
+                    except Exception as _e:
+                        if attempt_count == 4:
+                            raise Exception("Quiz generation failed; try adding more words to the database.")
             
         return render(self.request, "wordsandsentences/quiz.html", {"questions": questions})
 
