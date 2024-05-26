@@ -33,25 +33,52 @@ class QuizView(generic.FormView):
 
     @staticmethod
     def get_question_type(include_audio):
-        question_int = random.randint(0, 135 if include_audio else 99)
-        if question_int > 115:
-            return "audio_to_tone"
-        elif question_int > 99:
-            return "audio_to_not_tone"
-        if question_int > 75:
-            return "j_to_e"
-        elif question_int > 55:
-            return "e_to_j_buttons"
-        elif question_int > 40:
-            return "e_to_j_text"
-        elif question_int > 30:
-            return "topic_to_not_linked_word"
-        elif question_int > 20:
-            return "sentence_to_missing_word_buttons"
-        elif question_int > 10:
-            return "sentence_to_missing_word_text"
+        word_count = Word.objects.all().count()
+        sentence_count = Sentence.objects.all().count()
+        sentences_without_responses_count = Sentence.objects.filter(response_to=None).count()
+        if include_audio:
+            word_portion = word_count * 0.25 / (word_count * 0.25 + sentence_count)
         else:
-            return "words_to_ordered_sentence"
+            word_portion = word_count * 0.075 / (word_count * 0.075 + sentence_count)
+        sentences_without_responses_portion = sentences_without_responses_count / sentence_count
+        question_category_random = random.random()
+        question_type_random = random.random()
+        if question_category_random > 0.65:  # General questions
+            if question_type_random > 0.6:
+                return "j_to_e"
+            elif question_type_random > 0.27:
+                return "e_to_j_buttons"
+            else:
+                return "e_to_j_text"
+        question_category_random /= 0.65
+        if question_category_random <= word_portion:  # Word questions
+            if include_audio:
+                if question_type_random > 0.63:
+                    return "audio_to_tone"
+                elif question_type_random > 0.3:
+                    return "audio_to_not_tone"
+                else:
+                    return "topic_to_not_linked_word"
+            else:
+                return "topic_to_not_linked_word"
+        question_category_random -= word_portion
+        if question_category_random <= (1 - sentences_without_responses_portion) / 2:  # Sentence (with responses) questions
+            if question_type_random > 0.78:
+                return "sentence_to_response_buttons"
+            elif question_type_random > 0.5:
+                return "sentence_to_response_text"
+            elif question_type_random > 0.22:
+                return "response_to_sentence_buttons"
+            else:
+                return "response_to_sentence_text"
+        else:  # Sentence questions 
+            if question_type_random > 0.67:
+                return "sentence_to_missing_word_buttons"
+            elif question_type_random > 0.36:
+                return "sentence_to_missing_word_text"
+            else:
+                return "words_to_ordered_sentence"
+            
         
     @staticmethod
     def get_random_word_or_sentence(exclude_word_ids=[], exclude_sentence_ids=[]):
@@ -183,6 +210,14 @@ class QuizView(generic.FormView):
                     options = [{"text": word.jyutping, "audio_url": word.audio_file.url if word.audio_file and include_audio else None, "hide_text": option_audio_only} for word in [incorrect_word for incorrect_word in incorrect_words] + [correct_word]]
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word.jyutping, "options": options, "ordering_options": None})
+                case "sentence_to_response_buttons":
+                    pass
+                case "sentence_to_response_text":
+                    pass
+                case "response_to_sentence_buttons":
+                    pass
+                case "response_to_sentence_text":
+                    pass
                 case "sentence_to_missing_word_buttons":
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
                     used_sentence_ids.append(sentence.id)
