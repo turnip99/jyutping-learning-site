@@ -139,6 +139,12 @@ class QuizView(generic.FormView):
         used_word_ids = []
         used_sentence_ids = []
         questions = []
+        sentence_ids_without_responses = list(Sentence.objects.filter(responses=None).values_list("id", flat=True))
+        sentence_ids_without_response_to = list(Sentence.objects.filter(response_to=None).values_list("id", flat=True))
+        # Filter out sentences where the number of responses/response_to is greater than SENTENCE_COUNT - 3  <- as there are not enough incorrect answers to use.
+        sentence_count = Sentence.objects.all().count()
+        sentence_ids_with_too_many_responses = list(Sentence.objects.exclude(responses=None).annotate(c=Count('responses')).filter(c__gte=sentence_count - 3).values_list("id", flat=True))
+        sentences_ids_with_too_many_response_to = list(Sentence.objects.exclude(response_to=None).annotate(c=Count('response_to')).filter(c__gte=sentence_count - 3).values_list("id", flat=True))
 
         def generate_question_dict(question_type):
             match question_type:
@@ -172,19 +178,22 @@ class QuizView(generic.FormView):
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word.jyutping, "options": options, "ordering_options": None})
                 case "e_to_j_text":
-                    words_with_duplicate_english = Word.objects.filter(english__in=list(Word.objects.values_list("english", flat=True).annotate(english_count=Count("english")).filter(english_count__gte=2)))
-                    correct_word, is_sentence = self.get_random_word_or_sentence(exclude_word_ids=list(words_with_duplicate_english.values_list("id", flat=True)) + used_word_ids, exclude_sentence_ids=used_sentence_ids)
+                    correct_word, is_sentence = self.get_random_word_or_sentence(exclude_word_ids=used_word_ids, exclude_sentence_ids=used_sentence_ids)
                     if is_sentence:
-                        used_sentence_ids.append(correct_word.id)
+                        correct_list = list(Sentence.objects.filter(english=correct_word.english).values_list("jyutping", flat=True))
+                        for c in correct_list:
+                            used_sentence_ids.append(c.id)
                     else:
-                        used_word_ids.append(correct_word.id)
+                        correct_list = list(Word.objects.filter(english=correct_word.english).values_list("jyutping", flat=True))
+                        for c in correct_list:
+                            used_word_ids.append(c.id)
                     question_text = f"What is the Jyutping representation of '{correct_word.english}'?"
-                    questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word.jyutping, "options": None, "ordering_options": None})
+                    questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_list, "options": None, "ordering_options": None})
                 case "audio_to_tone":
                     word = self.get_random_word(exclude_ids=used_word_ids, audio_only=True, single_jyutping_word_only=True)
                     used_word_ids.append(word.id)
                     question_audio_url = word.audio_file.url
-                    question_text = f"What tone is used for these Cantonese word?"
+                    question_text = f"What tone is used for this word?"
                     options = [{"text": str(tone_num), "audio_url": None, "hide_text": False} for tone_num in [1, 2, 3, 4, 5, 6]]
                     questions.append({"question_text": question_text, "question_audio_url": question_audio_url, "correct": word.jyutping[-1], "options": options, "ordering_options": None})
                 case "audio_to_not_tone":
@@ -193,31 +202,54 @@ class QuizView(generic.FormView):
                     tones_in_word = set(re.findall(r'\d+', correct_word.jyutping))
                     tones_not_in_word = list(set(["1", "2", "3", "4", "5", "6"]).difference(tones_in_word))
                     excluded_tone = random.choice(tones_not_in_word)
-                    question_text = f"Which of these Cantonese words does not use tone {excluded_tone}?"
+                    question_text = f"Which of these does not use tone {excluded_tone}?"
                     incorrect_words = self.get_incorrect_words(correct_word, False, include_tone=excluded_tone, audio_only=True)
                     options = [{"text": word.jyutping, "audio_url": word.audio_file.url, "hide_text": True} for word in [incorrect_word for incorrect_word in incorrect_words] + [correct_word]]
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word.jyutping, "options": options, "ordering_options": None})
                 case "topic_to_not_linked_word":
+                    # Only include topics with at least three words.
                     topic = random.choice(Topic.objects.all().annotate(word_count=Count("word")).filter(word_count__gte=3))
                     correct_word = self.get_random_word(exclude_ids=list(Word.objects.filter(topic=topic).values_list("id", flat=True)) + used_word_ids)
                     used_word_ids.append(correct_word.id)
-                    if (option_audio_only := correct_word.audio_file and include_audio and random.randint(0, 1) == 1 and topic.word_set.exclude(audio_file__in=["", None]).count() >= 3):
-                        question_text = f"Which of these Cantonese words are not associated with the topic '{topic.topic_name}'?"
-                    else:
-                        question_text = f"Which of these Jyutping words are not associated with the topic '{topic.topic_name}'?"
+                    option_audio_only = correct_word.audio_file and include_audio and random.randint(0, 1) == 1 and topic.word_set.exclude(audio_file__in=["", None]).count() >= 3
+                    question_text = f"Which of these is not associated with the topic '{topic.topic_name}'?"
                     incorrect_words = self.get_incorrect_words(correct_word, False, exclude_ids=Word.objects.exclude(topic=topic).values_list("id", flat=True), audio_only=option_audio_only)
                     options = [{"text": word.jyutping, "audio_url": word.audio_file.url if word.audio_file and include_audio else None, "hide_text": option_audio_only} for word in [incorrect_word for incorrect_word in incorrect_words] + [correct_word]]
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word.jyutping, "options": options, "ordering_options": None})
                 case "sentence_to_response_buttons":
-                    pass
+                    question_sentence = self.get_random_sentence(exclude_ids=sentence_ids_without_responses + sentence_ids_with_too_many_responses + used_sentence_ids)
+                    used_sentence_ids.append(question_sentence)
+                    question_responses = question_sentence.responses.all()
+                    correct_sentence = random.choice(question_responses)
+                    question_text = f"Which of these would be a response to '{question_sentence.jyutping}'?"
+                    incorrect_sentences = self.get_incorrect_words(correct_sentence, True, exclude_ids=list(question_responses.values_list("id", flat=True)))
+                    options = [{"text": sentence.jyutping, "audio_url": None, "hide_text": False} for sentence in [incorrect_sentence for incorrect_sentence in incorrect_sentences] + [correct_sentence]]
+                    random.shuffle(options)
+                    questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_sentence.jyutping, "options": options, "ordering_options": None})
                 case "sentence_to_response_text":
-                    pass
+                    question_sentence = self.get_random_sentence(exclude_ids=sentence_ids_without_responses + used_sentence_ids)
+                    used_sentence_ids.append(question_sentence)
+                    question_responses = question_sentence.responses.all()
+                    question_text = f"What would be a response to '{question_sentence.jyutping}'?"
+                    questions.append({"question_text": question_text, "question_audio_url": None, "correct": list(question_responses.values_list("jyutping", flat=True)), "options": None, "ordering_options": None})
                 case "response_to_sentence_buttons":
-                    pass
+                    question_sentence = self.get_random_sentence(exclude_ids=sentence_ids_without_response_to + sentences_ids_with_too_many_response_to + used_sentence_ids)
+                    used_sentence_ids.append(question_sentence)
+                    question_response_to = question_sentence.response_to.all()
+                    correct_sentence = random.choice(question_response_to)
+                    question_text = f"Which of these would '{question_sentence.jyutping}' be a response to?"
+                    incorrect_sentences = self.get_incorrect_words(correct_sentence, True, exclude_ids=list(question_response_to.values_list("id", flat=True)))
+                    options = [{"text": sentence.jyutping, "audio_url": None, "hide_text": False} for sentence in [incorrect_sentence for incorrect_sentence in incorrect_sentences] + [correct_sentence]]
+                    random.shuffle(options)
+                    questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_sentence.jyutping, "options": options, "ordering_options": None})
                 case "response_to_sentence_text":
-                    pass
+                    question_sentence = self.get_random_sentence(exclude_ids=sentence_ids_without_response_to + used_sentence_ids)
+                    used_sentence_ids.append(question_sentence)
+                    question_response_to = question_sentence.response_to.all()
+                    question_text = f"What would '{question_sentence.jyutping} be a response to'?"
+                    questions.append({"question_text": question_text, "question_audio_url": None, "correct": list(question_response_to.values_list("jyutping", flat=True)), "options": None, "ordering_options": None})
                 case "sentence_to_missing_word_buttons":
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
                     used_sentence_ids.append(sentence.id)
@@ -236,7 +268,7 @@ class QuizView(generic.FormView):
                     correct_word_index = random.choice(range(len(sentence_word_array)))
                     correct_word_jyutping = sentence_word_array[correct_word_index]
                     question_text = f"""Fill in the blank: '{' '.join(["_" if i == correct_word_index else sentence_word for i, sentence_word in enumerate(sentence_word_array)])}{"?" if "?" in sentence.jyutping else ""}'."""
-                    questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_word_jyutping, "options": None, "ordering_options": None})
+                    questions.append({"question_text": question_text, "question_audio_url": None, "correct": [correct_word_jyutping], "options": None, "ordering_options": None})
                 case "words_to_ordered_sentence":
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
                     used_sentence_ids.append(sentence.id)

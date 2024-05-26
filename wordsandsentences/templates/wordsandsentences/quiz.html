@@ -89,8 +89,10 @@
                         </div>
                     {% endfor %}
                 {% else %}
-                    <input type="text" class="answer-text form-control" data-answer="{{ question.correct }}"{% if forloop.first %} autofocus{% endif %}></input>
-                    <label class="d-none correct-answer-label my-1 fw-bold" style="color: #198217">{{ question.correct }}</label>
+                    <input type="text" class="answer-text form-control" {% if forloop.first %} autofocus{% endif %}></input>
+                    {% for correct in question.correct %}
+                        <label class="d-none correct-answer-label my-1 fw-bold" style="color: #198217">{{ correct }}</label>
+                    {% endfor %}
                 {% endif %}
             </div>
         </div>
@@ -200,12 +202,19 @@
             }
             else if (enabledAnswerText.length) {
                 enabledAnswerText.prop("disabled", true)
-                if (enabledAnswerText.val().toLowerCase().replaceAll("?", "") == enabledAnswerText.data("answer").toLowerCase().replaceAll("?", "")) {
-                    enabledAnswerText.addClass("correct")
-                    correctAnswersCount += 1
-                }
-                else {
-                    enabledAnswerText.addClass("incorrect").next(".correct-answer-label").removeClass("d-none")
+                const enteredText = enabledAnswerText.val().toLowerCase().replaceAll("?", "")
+                const correctAnswerLabels = currentQuestionDiv.find(".correct-answer-label")
+                let answerFound = false
+                correctAnswerLabels.each(function () {
+                    if (enteredText == $(this).text().toLowerCase().replaceAll("?", "")) {
+                        enabledAnswerText.addClass("correct")
+                        correctAnswersCount++
+                        answerFound = true
+                    }
+                })
+                if (!answerFound) {
+                    enabledAnswerText.addClass("incorrect")
+                    correctAnswerLabels.removeClass("d-none")
                     incorrectAnswersCount++
                 }
                 updateProgressBar()
