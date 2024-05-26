@@ -37,6 +37,7 @@ class LearningItemForm(FormWithHelperMixin, forms.ModelForm):
         fields = [
             "topic",
             "jyutping",
+            "cantonese",
             "english",
             "notes",
             "loc",

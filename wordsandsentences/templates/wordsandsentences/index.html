@@ -38,25 +38,25 @@
                             <thead>
                                 <tr>
                                     <th>Jyutping</th>
+                                    <th>Cantonese</th>
                                     <th>English</th>
                                     <th>Notes</th>
-                                    <th>Listen</th>
                                     <th class="d-none d-lg-table-cell">Edit</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for word in words_and_sentences.words %}
                                     <tr>
-                                        <td data-searchable="{{ word.jyutping|lower }}">{{ word.jyutping }}</td>
-                                        <td data-searchable="{{ word.english|lower }}">{{ word.english }}</td>
-                                        <td>{% if word.notes %}{{ word.notes }}{% else %}-{% endif %}</td>
-                                        <td>
+                                        <td data-searchable="{{ word.jyutping|lower }}">
+                                            {{ word.jyutping }}
                                             {% if word.audio_file %}
                                                 {% include "wordsandsentences/audio.html" with audio_url=word.audio_file.url %}
                                             {% else %}
                                                 -
-                                            {% endif %}
-                                        </td>
+                                            {% endif %}</td>
+                                        <td data-searchable="{{ word.cantonese }}">{% if word.cantonese %}{{ word.cantonese }}{% else %}-{% endif %}</td>
+                                        <td data-searchable="{{ word.english|lower }}">{{ word.english }}</td>
+                                        <td>{% if word.notes %}{{ word.notes }}{% else %}-{% endif %}</td>
                                         <td class="d-none d-lg-table-cell"><a href="{% url 'word_update' pk=word.pk %}" style="text-decoration: none;">&#9998;</a></td>
                                     </tr>
                                 {% endfor %}

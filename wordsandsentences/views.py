@@ -475,19 +475,20 @@ class ImportView(generic.FormView):
                                 if (jyutping := row["jyutping"]) in existing_objs_for_topic_by_jyutping.keys():
                                     print(f"Updating object {jyutping}")
                                     obj = existing_objs_for_topic_by_jyutping[jyutping]
+                                    obj.cantonese = row["cantonese"]
                                     obj.english = row["english"]
                                     obj.notes = row["notes"]
                                     obj.loc = loc
                                     objs_to_update.append(obj)
                                 else:
                                     print(f"Creating object {jyutping}")
-                                    obj = model_class(topic_id=topic_ids_by_name[topic], jyutping=jyutping, english=row["english"], notes=row["notes"], loc=loc)
+                                    obj = model_class(topic_id=topic_ids_by_name[topic], jyutping=jyutping, cantonese=row["cantonese"], english=row["english"], notes=row["notes"], loc=loc)
                                     objs_to_create.append(obj)
                                 loc += 10
                         if objs_to_create:
                             model_class.objects.bulk_create(objs_to_create)
                         if objs_to_update:
-                            model_class.objects.bulk_update(objs_to_update, ["english", "notes", "loc"])
+                            model_class.objects.bulk_update(objs_to_update, ["cantonese", "english", "notes", "loc"])
                     for topic, sentence_rows in sentences_by_topic.items():
                         for sentence_row in sentence_rows:
                             if sentence_row["response_to"]:
@@ -529,10 +530,10 @@ class WordsExportView(generic.View):
             headers={"Content-Disposition": f"attachment; filename=Jyutping words {datetime.now().date().strftime('%d-%m-%Y')}.csv"}
         )
         writer = csv.writer(response)
-        writer.writerow(["topic", "jyutping", "english", "notes", "is_sentence", "response_to"])
+        writer.writerow(["topic", "jyutping", "cantonese", "english", "notes", "is_sentence", "response_to"])
         for topic in Topic.objects.all():
             for word in topic.word_set.all():
-                writer.writerow([word.topic.topic_name, word.jyutping, word.english, word.notes, "no", ""])
+                writer.writerow([word.topic.topic_name, word.jyutping, word.cantonese, word.english, word.notes, "no", ""])
             for sentence in topic.sentence_set.all():
-                writer.writerow([sentence.topic.topic_name, sentence.jyutping, sentence.english, sentence.notes, "yes", ", ".join([response_to_sentence.jyutping for response_to_sentence in sentence.response_to.all()])])
+                writer.writerow([sentence.topic.topic_name, sentence.jyutping, sentence.cantonese, sentence.english, sentence.notes, "yes", ", ".join([response_to_sentence.jyutping for response_to_sentence in sentence.response_to.all()])])
         return response
