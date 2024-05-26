@@ -32,7 +32,7 @@ class LearningItem(models.Model):
     
     @property
     def cantonese_and_jyutping(self):
-        return f"{f'{self.cantonese} ' if self.cantonese else ''}{self.jyutping}"
+        return f"{self.jyutping}{f' ({self.cantonese})' if self.cantonese else ''}"
 
 
 class Word(LearningItem):

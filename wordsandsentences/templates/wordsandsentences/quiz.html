@@ -81,7 +81,7 @@
                     {% for option in question.options %}
                         <div class="col-12 col-md-6 p-0">
                             <div class="option-button" data-correct="{% if option.text == question.correct %}true{% else %}false{% endif %}">
-                                <span class="option-text{% if option.hide_text %} d-none{% endif %}">{% if option.cantonese %}{{ option.cantonese }} {% endif %}{{ option.text }}</span>
+                                <span class="option-text{% if option.hide_text %} d-none{% endif %}">{{ option.text }}{% if option.cantonese %} ({{ option.cantonese }}){% endif %}</span>
                                 {% if option.audio_url %}
                                     {% include "wordsandsentences/audio.html" with audio_url=option.audio_url %}
                                 {% endif %}
