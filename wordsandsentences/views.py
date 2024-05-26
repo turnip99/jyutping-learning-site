@@ -1,3 +1,4 @@
+import codecs
 import csv
 import os
 import random
@@ -13,6 +14,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
+import unicodecsv
 
 from .forms import QuizStartForm, ImportForm, TopicForm, WordForm, SentenceForm
 from .models import Topic, Word, Sentence
@@ -426,7 +428,7 @@ class ImportView(generic.FormView):
 
     def form_valid(self, form):
         if words_csv := form.cleaned_data["words_csv"]:
-            csv_rows = list(csv.DictReader(words_csv.file.read().decode('utf-8').splitlines()))
+            csv_rows = list(csv.DictReader(words_csv.file.read().decode('utf-8-sig').splitlines()))
             with transaction.atomic():
                 try:
                     # Create topics
@@ -529,7 +531,8 @@ class WordsExportView(generic.View):
             content_type="text/csv",
             headers={"Content-Disposition": f"attachment; filename=Jyutping words {datetime.now().date().strftime('%d-%m-%Y')}.csv"}
         )
-        writer = csv.writer(response)
+        response.write(codecs.BOM_UTF8)  # Force into UTF-8 so that it accepts Chinese characters.
+        writer = unicodecsv.writer(response)
         writer.writerow(["topic", "jyutping", "cantonese", "english", "notes", "is_sentence", "response_to"])
         for topic in Topic.objects.all():
             for word in topic.word_set.all():
