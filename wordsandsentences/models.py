@@ -18,6 +18,7 @@ class LearningItem(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.deletion.CASCADE)
     jyutping = models.CharField(max_length=100)
     english = models.CharField(max_length=100)
+    cantonese = models.CharField(blank=True, max_length=50)
     notes = models.CharField(blank=True, max_length=200)
     loc = models.IntegerField()
 
