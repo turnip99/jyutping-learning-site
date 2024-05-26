@@ -5,12 +5,12 @@ from .models import *
 
 class WordInline(admin.TabularInline):
     model = Word
-    fields = ("jyutping", "english", "notes", "loc")
+    fields = ("jyutping", "cantonese", "english", "notes", "loc")
 
 
 class SentenceInline(admin.TabularInline):
     model = Sentence
-    fields = ("jyutping", "english", "notes", "loc")
+    fields = ("jyutping", "cantonese", "english", "notes", "loc")
 
 
 @admin.register(Topic)
