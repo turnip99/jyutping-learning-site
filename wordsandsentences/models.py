@@ -29,6 +29,10 @@ class LearningItem(models.Model):
 
     def __str__(self):
         return f"{self.jyutping} ({self.english})"
+    
+    @property
+    def cantonese_and_jyutping(self):
+        return f"{f'{self.cantonese} ' if self.cantonese else ''}{self.jyutping}"
 
 
 class Word(LearningItem):
