@@ -261,7 +261,7 @@ class QuizView(generic.FormView):
                     question_sentence = self.get_random_sentence(exclude_ids=sentence_ids_without_response_to + used_sentence_ids)
                     used_sentence_ids.append(question_sentence.id)
                     question_response_to = question_sentence.response_to.all()
-                    question_text = f"What would '{question_sentence.cantonese_and_jyutping} be a response to'?"
+                    question_text = f"What would '{question_sentence.cantonese_and_jyutping}' be a response to?"
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": list(question_response_to.values_list("jyutping", flat=True)), "options": None, "ordering_options": None})
                 case "sentence_to_missing_word_buttons":
                     sentence = self.get_random_sentence(exclude_ids=used_sentence_ids)
