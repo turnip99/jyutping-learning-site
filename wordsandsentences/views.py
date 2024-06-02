@@ -4,7 +4,6 @@ import os
 import random
 import re
 from datetime import datetime
-from io import BytesIO, StringIO
 
 from django.conf import settings
 from django.core.files import File
@@ -16,7 +15,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 import unicodecsv
 
-from .forms import QuizStartForm, ImportForm, TopicForm, WordForm, SentenceForm
+from .forms import FlashcardsStartForm, QuizStartForm, ImportForm, TopicForm, WordForm, SentenceForm
 from .models import Topic, Word, Sentence
 from .utils import get_topic_dict
 
@@ -306,6 +305,32 @@ class QuizView(generic.FormView):
                             raise Exception("Quiz generation failed; try adding more words to the database.")
             
         return render(self.request, "wordsandsentences/quiz.html", {"questions": questions})
+    
+
+class FlashcardsView(generic.FormView):
+    template_name = "wordsandsentences/flashcards_start.html"
+    form_class = FlashcardsStartForm
+
+    def form_valid(self, form):
+        topic = form.cleaned_data["topic"]
+        randomise_order = form.cleaned_data["randomise_order"]
+        words_sentences_both = form.cleaned_data["words_sentences_both"]
+        starting_side = form.cleaned_data["starting_side"]
+        if words_sentences_both == "sentences":
+            words = Word.objects.none()
+        else:
+            words = Word.objects.all()
+        if words_sentences_both == "words":
+            sentences = Sentence.objects.none()
+        else:
+            sentences = Sentence.objects.all()
+        if topic:
+            words = words.filter(topic=topic)
+            sentences = sentences.filter(topic=topic)
+        words_and_sentences = list(words) + list(sentences)
+        if randomise_order:
+            random.shuffle(words_and_sentences)
+        return render(self.request, "wordsandsentences/flashcards.html", {"words_and_sentences": words_and_sentences, "starting_side": starting_side})
 
 
 

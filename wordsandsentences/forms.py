@@ -1,6 +1,7 @@
-from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Layout, Div, Submit
+from django import forms
+from django.db.models import Q
 from django.urls import reverse_lazy
 
 from jyutpinglearningsite.forms import FormWithHelperMixin
@@ -18,6 +19,23 @@ class QuizStartForm(FormWithHelperMixin, forms.Form):
         if int(question_count) > Word.objects.count() + Sentence.objects.count():
             raise forms.ValidationError("You do not have enough words and sentences in the database for a quiz of this length.")
         return question_count
+    
+
+class FlashcardsStartForm(FormWithHelperMixin, forms.Form):
+    topic = forms.ModelChoiceField(queryset=Topic.objects.filter(Q(word__isnull=False) | Q(sentence__isnull=False)).distinct(), required=False, empty_label="All")
+    randomise_order = forms.BooleanField(initial=True, label="Randomise the order of the flashcards", required=False)
+    words_sentences_both = forms.ChoiceField(choices=(("both", "Words and sentences"), ("words", "Words only"), ("sentences", "Sentences only")), label="Include words or sentences")
+    starting_side = forms.ChoiceField(choices=(("jyutping", "Jyutping"), ("english", "English")), label="Flashcards starting side")
+    submit_text = "View flashcards"
+    submit_css_class = "btn-primary"
+
+    def clean(self):
+        super().clean()
+        if topic := self.cleaned_data["topic"]:
+            if self.cleaned_data["words_sentences_both"] == "words" and not topic.word_set.exists():
+                raise forms.ValidationError("The selected topic has no words.")
+            elif self.cleaned_data["words_sentences_both"] == "sentences" and not topic.sentence_set.exists():
+                raise forms.ValidationError("The selected topic has no sentences.")
 
 
 class TopicForm(FormWithHelperMixin, forms.ModelForm):

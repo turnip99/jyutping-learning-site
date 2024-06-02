@@ -7,6 +7,7 @@ from . import views
 urlpatterns = [
     path('', login_required(views.IndexView.as_view(), login_url="/login/"), name='index'),
     path('quiz/', login_required(views.QuizView.as_view(), login_url="/login/"), name='quiz'),
+    path('flashcards/', login_required(views.FlashcardsView.as_view(), login_url="/login/"), name='flashcards'),
     path('edit_list/', staff_required(views.EditListView.as_view()), name='edit_list'),
     path('topic_create/', staff_required(views.TopicCreateView.as_view()), name='topic_create'),
     path('topic_update/<int:pk>/', staff_required(views.TopicUpdateView.as_view()), name='topic_update'),

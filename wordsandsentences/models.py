@@ -11,7 +11,7 @@ class Topic(models.Model):
         ordering = ["loc"]
 
     def __str__(self):
-        return self.topic_name
+        return self.topic_name.capitalize()
 
 
 class LearningItem(models.Model):

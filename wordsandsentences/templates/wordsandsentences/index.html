@@ -14,6 +14,7 @@
 
 {% block main %}
     <a href="{% url 'quiz' %}" class="btn btn-primary w-100 mb-1">Start quiz</a>
+    <a href="{% url 'flashcards' %}" class="btn btn-primary w-100 mb-1">View flashcards</a>
     {% if request.user.is_staff %}
         <a href="{% url 'edit_list' %}" class="btn btn-secondary w-100 mb-1">Edit words and sentences</a>
         <a href="{% url 'import' %}" class="btn btn-secondary w-100 mb-1">Import words and sentences</a>

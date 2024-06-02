@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block main %}
+    <form id="flashcards_start_form" method="post">
+        {% crispy form %}
+    </form>
+{% endblock %}

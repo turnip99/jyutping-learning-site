@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block styles %}
+    <style>
+        #progress_bar {
+            background-color: var(--content-border-colour);
+        }
+        .flashcard {
+            position: relative;
+            margin: 1em 0;
+            padding: 0.75em;
+            background-color: var(--content-bg-colour);
+            border: 2px solid var(--content-border-colour);
+            border-radius: 0.75em;
+            cursor: pointer;
+            text-align: center;
+            min-height: 8em !important;
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            flex-direction: column;
+        }
+        .flashcard-text {
+            font-weight: bold;
+            font-size: 1.8em;
+        }
+    </style>
+{% endblock %}
+
+{% block main %}
+    {% for word_or_sentence in words_and_sentences %}   
+        <div class="flashcard-div{% if not forloop.first %} d-none{% endif %}" data-index="{{ forloop.counter }}">
+            <div class="text-end">Card {{ forloop.counter }}/{{ words_and_sentences|length }}</div>
+            <div class="flashcard">
+                <div class="flashcard-text{% if starting_side == 'jyutping' %} active{% endif %}" {% if starting_side == 'english' %} style="display: none;"{% endif %}>
+                    {{ word_or_sentence.cantonese_and_jyutping }}
+                    {% if word_or_sentence.audio_file %}
+                        {% include "wordsandsentences/audio.html" with audio_url=word_or_sentence.audio_file.url %}
+                    {% endif %}
+                    {% if word_or_sentence.notes %}
+                        <br/><span class="fst-italic fw-normal">{{ word_or_sentence.notes }}</span>
+                    {% endif %}
+                </div>
+                <div class="flashcard-text{% if starting_side == 'english' %} active{% endif %}" {% if starting_side == 'jyutping' %} style="display: none;"{% endif %}">
+                    {{ word_or_sentence.english }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="btn-group w-100">
+        <button id="btn_previous" class="btn btn-primary w-100 mb-3" disabled>&#x2190; Previous</button>
+        <button id="btn_next" class="btn btn-primary w-100 mb-3"{% if words_and_sentences|length == 1 %} disabled{% endif %}>Next &#x2192;</button>
+    </div>
+
+    <div class="progress">
+        <div class="progress-bar" id="progress_bar" style="width: 0%"></div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        let questonCount = parseInt("{{ words_and_sentences|length }}")
+
+        $("#btn_previous").click(function() {
+            const currentFashcardDiv = $(".flashcard-div").not(".d-none")
+            const previousFashcardDiv = currentFashcardDiv.prev(".flashcard-div")
+            if (previousFashcardDiv.length) {
+                changeFlashcard(currentFashcardDiv, previousFashcardDiv)
+            }
+        });
+
+        $("#btn_next").click(function() {
+            const currentFashcardDiv = $(".flashcard-div").not(".d-none")
+            const nextFashcardDiv = currentFashcardDiv.next(".flashcard-div")
+            if (nextFashcardDiv.length) {
+                changeFlashcard(currentFashcardDiv, nextFashcardDiv)
+            }
+        });
+
+        function changeFlashcard(oldFlashcardDiv, newFlashcardDiv) {
+            oldFlashcardDiv.addClass("d-none")
+            newFlashcardDiv.removeClass("d-none")
+            $("#btn_previous").prop("disabled", !newFlashcardDiv.prev(".flashcard-div").length)
+            $("#btn_next").prop("disabled", !newFlashcardDiv.next(".flashcard-div").length)
+            updateProgressBar(parseInt(newFlashcardDiv.data("index")))
+        }
+
+        function updateProgressBar(flashcardIndex) {
+            completePercentage = flashcardIndex * 100 / questonCount
+            $("#progress_bar").css("width", `${completePercentage}%`)
+        }
+
+        updateProgressBar(1)
+
+        $(".flashcard").click(function() {
+            const visibleText = $(this).find(".flashcard-text.active")
+            if (visibleText.length) {
+                const invisibleText = $(this).find(".flashcard-text").not(".active")
+                visibleText.removeClass("active").fadeOut(200)
+                invisibleText.delay(200).fadeIn(200).addClass("active")
+            }
+        })
+
+        $(document).on('keyup', function(e) {
+            const nextButton = $("#btn_next")
+            if (e.which == 13 && !nextButton.prop("disabled")) {
+                nextButton.click()
+            }
+        });
+
+        $(window).on('beforeunload', function(){
+            if ($(".question-div").not(".d-none").length) {
+                return 'Are you sure you want to leave?';
+            }
+        });
+    </script>
+{% endblock %}
