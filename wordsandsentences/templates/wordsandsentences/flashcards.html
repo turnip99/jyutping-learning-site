@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block styles %}
     <style>
@@ -22,7 +23,6 @@
             align-content: center;
             flex-direction: column;
         }
-
         .flashcard-details {
             height: calc(var(--flip-card-height) - 1.5em);
             display: flex;
@@ -66,7 +66,7 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="http://unpkg.com/flip-card-wc/dist/flip-card-wc.js"></script>
+    <script src="{% static 'wordsandsentences/flip_card.js' %}"></script>
     <script>
         let questonCount = parseInt("{{ words_and_sentences|length }}")
 
