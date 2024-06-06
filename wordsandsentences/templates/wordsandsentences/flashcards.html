@@ -41,12 +41,14 @@
             <div class="text-end">Card {{ forloop.counter }}/{{ words_and_sentences|length }}</div>
             <flip-card class="flashcard" variant="click">
                 <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}front{% else %}back{% endif %}">
-                    {{ word_or_sentence.cantonese_and_jyutping }}
-                    {% if word_or_sentence.audio_file %}
-                        {% include "wordsandsentences/audio.html" with audio_url=word_or_sentence.audio_file.url %}
-                    {% endif %}
+                    <span>
+                        {{ word_or_sentence.cantonese_and_jyutping }}
+                        {% if word_or_sentence.audio_file %}
+                            {% include "wordsandsentences/audio.html" with audio_url=word_or_sentence.audio_file.url %}
+                        {% endif %}
+                    </span>
                     {% if word_or_sentence.notes %}
-                        <br/><span class="fst-italic fw-normal">{{ word_or_sentence.notes }}</span>
+                        <span class="fst-italic fw-normal">{{ word_or_sentence.notes }}</span>
                     {% endif %}
                 </div>
                 <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}back{% else %}front{% endif %}">
