@@ -29,13 +29,13 @@
         {% for topic, words_and_sentences in topic_dict.items %}
             <div class="accordion-item">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ topic.pk }}" aria-expanded="true" aria-controls="collapse_{{ topic.pk }}">
+                    <button class="accordion-button collapsed" style="background-color: {{ topic.colour }}dd;" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ topic.pk }}" aria-expanded="true" aria-controls="collapse_{{ topic.pk }}">
                         {{ topic.topic_name|capfirst }}
                     </button>
                 </h2>
                 <div id="collapse_{{ topic.pk }}" class="accordion-collapse collapse" data-bs-parent="#words_accordion">
-                    <div class="accordion-body table-responsive">
-                        <table class="table">
+                    <div class="accordion-body table-responsive" style="background-color: {{ topic.colour }};">
+                        <table class="table" style="border-color: #eeeeee30;">
                             <thead>
                                 <tr>
                                     <th>Jyutping</th>

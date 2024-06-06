@@ -467,10 +467,11 @@ class ImportView(generic.FormView):
                         loc += 10
                     for row in csv_rows:
                         imported_topic_name = row["topic_name"]
-                        topic, _created = Topic.objects.get_or_create(topic_name=imported_topic_name)
+                        topic, created = Topic.objects.get_or_create(topic_name=imported_topic_name, defaults={"loc": loc})
                         topic.colour = row["colour"]
                         print(f"Assigning colour {topic.colour} to {topic.topic_name}")
-                        topic.loc = loc
+                        if created:
+                            topic.loc = loc
                         topic.save()
                         loc += 10
                 except Exception as e:

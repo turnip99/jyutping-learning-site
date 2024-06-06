@@ -11,8 +11,6 @@
             --flip-card-height: 350px;
             --flip-card-transition-duration: 600ms;
             --flip-card-border-radius: 1px;
-            --flip-card-background-color-front: LightSkyBlue;
-            --flip-card-background-color-back: salmon;
             --flip-card-box-shadow: 0px 2px 1px -1px rgb(0 0 0 / 20%),
                 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%);
             margin: 1em 0;
@@ -39,7 +37,7 @@
     {% for word_or_sentence in words_and_sentences %}   
         <div class="flashcard-div{% if not forloop.first %} d-none{% endif %}" data-index="{{ forloop.counter }}">
             <div class="text-end">Card {{ forloop.counter }}/{{ words_and_sentences|length }}</div>
-            <flip-card class="flashcard" variant="click">
+            <flip-card class="flashcard" variant="click" style="{% if starting_side == 'jyutping' %}--flip-card-background-color-front: {{ word_or_sentence.topic.colour }}; --flip-card-background-color-back: {{ word_or_sentence.topic.colour }}bb;{% else %}--flip-card-background-color-front: {{ word_or_sentence.topic.colour }}cc; --flip-card-background-color-back: {{ word_or_sentence.topic.colour }};{% endif %}">
                 <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}front{% else %}back{% endif %}">
                     <span>
                         {{ word_or_sentence.cantonese_and_jyutping }}

@@ -4,7 +4,7 @@
 {% block main %}
     <div class="row">
         {% for topic, words_and_sentences in topic_dict.items %}
-            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="col-12 col-md-6 col-lg-4 col-xl-3 p-3" style="background-color: {{ topic.colour }};">
                 <a href="{% url 'topic_update' pk=topic.pk %}">{{ topic|capfirst }}</a>
                 <a href="{% url 'topic_delete' pk=topic.pk %}" style="text-decoration: none;">&#128465;</a>
                 <ul>
