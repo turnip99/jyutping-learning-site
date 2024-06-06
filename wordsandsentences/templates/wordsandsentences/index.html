@@ -82,7 +82,7 @@
         $("#searchBox").keyup(function(e) {
             const searchText = $(this).val().toLowerCase()
             $("#words_accordion td").removeClass("searched").removeClass("searched-scrolled")
-            if (e.which == 13 && searchText.length) {
+            if (e.keyCode == 13 && searchText.length) {
                 if (searchText != lastSearchedText) {
                     matchingItems = $(`#words_accordion td[data-searchable*='${searchText}']`)
                     matchingItems.addClass("searched")

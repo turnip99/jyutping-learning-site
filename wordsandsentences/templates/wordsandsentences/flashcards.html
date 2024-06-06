@@ -103,11 +103,29 @@
         })
 
         $(document).on('keyup', function(e) {
+            const previousButton = $("#btn_previous")
             const nextButton = $("#btn_next")
-            if (e.which == 13 && !nextButton.prop("disabled")) {
-                nextButton.click()
+            if (e.keyCode == 13 || e.keyCode == 32) {
+                if (e.shiftKey) {
+                    programmaticallyPressButton(previousButton)
+                }
+                else {
+                    programmaticallyPressButton(nextButton)
+                }
+            }
+            else if (e.keyCode == 37 || e.keyCode == 65) {
+                programmaticallyPressButton(previousButton)
+            }
+            else if (e.keyCode == 39 || e.keyCode == 68) {
+                programmaticallyPressButton(nextButton)
             }
         });
+
+        function programmaticallyPressButton(button) {
+            if (!button.prop("disabled")) {
+                button.click()
+            }
+        }
 
         $(window).on('beforeunload', function(){
             return 'Are you sure you want to leave?';

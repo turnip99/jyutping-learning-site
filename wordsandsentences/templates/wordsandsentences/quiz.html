@@ -236,7 +236,7 @@
 
         $(document).on('keyup', function(e) {
             const nextButton = $("#btn_next")
-            if (e.which == 13 && !nextButton.prop("disabled")) {
+            if ((e.keyCode == 13 || e.keyCode == 32) && !nextButton.prop("disabled")) {
                 nextButton.click()
             }
         });
