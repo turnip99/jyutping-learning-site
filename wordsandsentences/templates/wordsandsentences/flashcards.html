@@ -7,22 +7,30 @@
             background-color: var(--content-border-colour);
         }
         .flashcard {
-            position: relative;
+            --flip-card-height: 350px;
+            --flip-card-transition-duration: 600ms;
+            --flip-card-border-radius: 1px;
+            --flip-card-background-color-front: LightSkyBlue;
+            --flip-card-background-color-back: salmon;
+            --flip-card-box-shadow: 0px 2px 1px -1px rgb(0 0 0 / 20%),
+                0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%);
             margin: 1em 0;
-            padding: 0.75em;
-            background-color: var(--content-bg-colour);
-            border: 2px solid var(--content-border-colour);
-            cursor: pointer;
+            position: relative;
             text-align: center;
-            min-height: 8em !important;
             display: flex;
             justify-content: center;
             align-content: center;
             flex-direction: column;
         }
-        .flashcard-text {
+
+        .flashcard-details {
+            height: calc(var(--flip-card-height) - 1.5em);
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            margin: 0.75em;
             font-weight: bold;
-            font-size: 1.8em;
+            font-size: calc(2vw + 1em);
         }
     </style>
 {% endblock %}
@@ -31,8 +39,8 @@
     {% for word_or_sentence in words_and_sentences %}   
         <div class="flashcard-div{% if not forloop.first %} d-none{% endif %}" data-index="{{ forloop.counter }}">
             <div class="text-end">Card {{ forloop.counter }}/{{ words_and_sentences|length }}</div>
-            <div class="flashcard shadow">
-                <div class="flashcard-text{% if starting_side == 'jyutping' %} active{% endif %}" {% if starting_side == 'english' %} style="display: none;"{% endif %}>
+            <flip-card class="flashcard" variant="click">
+                <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}front{% else %}back{% endif %}">
                     {{ word_or_sentence.cantonese_and_jyutping }}
                     {% if word_or_sentence.audio_file %}
                         {% include "wordsandsentences/audio.html" with audio_url=word_or_sentence.audio_file.url %}
@@ -41,10 +49,10 @@
                         <br/><span class="fst-italic fw-normal">{{ word_or_sentence.notes }}</span>
                     {% endif %}
                 </div>
-                <div class="flashcard-text{% if starting_side == 'english' %} active{% endif %}" {% if starting_side == 'jyutping' %} style="display: none;"{% endif %}">
+                <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}back{% else %}front{% endif %}">
                     {{ word_or_sentence.english }}
                 </div>
-            </div>
+            </flip-card>
         </div>
     {% endfor %}
     <div class="btn-group w-100">
@@ -58,6 +66,7 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="http://unpkg.com/flip-card-wc/dist/flip-card-wc.js"></script>
     <script>
         let questonCount = parseInt("{{ words_and_sentences|length }}")
 
@@ -91,15 +100,6 @@
         }
 
         updateProgressBar(1)
-
-        $(".flashcard").click(function() {
-            const visibleText = $(this).find(".flashcard-text.active")
-            if (visibleText.length) {
-                const invisibleText = $(this).find(".flashcard-text").not(".active")
-                visibleText.removeClass("active").fadeOut(200)
-                invisibleText.delay(200).fadeIn(200).addClass("active")
-            }
-        })
 
         $(document).on('keyup', function(e) {
             const previousButton = $("#btn_previous")
