@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='topic',
             name='colour',
-            field=models.CharField(default='#dddddd', help_text='Pick a light colour, for good contrast with black text.', max_length=7),
+            field=models.CharField(default='#eeeeee', help_text='Pick a light colour, for good contrast with black text.', max_length=7),
         ),
     ]
