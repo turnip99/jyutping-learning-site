@@ -5,6 +5,7 @@ from django.db import models
 
 class Topic(models.Model):
     topic_name = models.CharField(max_length=100, unique=True)
+    colour = models.CharField(max_length=7, default="#ffffff", help_text="Pick a dark colour, for good contrast with white backgrounds/text.")
     loc = models.IntegerField()
 
     class Meta:

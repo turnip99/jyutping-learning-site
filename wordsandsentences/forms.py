@@ -43,6 +43,7 @@ class TopicForm(FormWithHelperMixin, forms.ModelForm):
         model = Topic
         fields = [
             "topic_name",
+            "colour",
             "loc",
         ]
 
@@ -104,17 +105,21 @@ class MultipleFileField(forms.FileField):
 
 
 class ImportForm(forms.Form):
+    topics_csv = forms.FileField(required=False, label="CSV of topics")
     words_csv = forms.FileField(required=False, label="CSV of words and sentences")
     audio_files = MultipleFileField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.layout = Layout(Div(Div("words_csv", css_class="col-12 col-md-8 col-lg-9"), Div(HTML(f"""<a href='{reverse_lazy("words_export")}' class='btn btn-info w-100'>Export existing words</a>"""), css_class="col-12 col-md-4 col-lg-3 mb-3"), css_class="row align-items-end"), "audio_files")
+        self.helper.layout = Layout(
+            Div(Div("topics_csv", css_class="col-12 col-md-8 col-lg-9"), Div(HTML(f"""<a href='{reverse_lazy("topics_export")}' class='btn btn-info w-100'>Export existing topics</a>"""), css_class="col-12 col-md-4 col-lg-3 mb-3"), css_class="row align-items-end"),
+            Div(Div("words_csv", css_class="col-12 col-md-8 col-lg-9"), Div(HTML(f"""<a href='{reverse_lazy("words_export")}' class='btn btn-info w-100'>Export existing words</a>"""), css_class="col-12 col-md-4 col-lg-3 mb-3"), css_class="row align-items-end"),
+            "audio_files")
         self.helper.add_input(Submit('submit', "Upload", css_class="btn-secondary"))
 
     def clean(self):
         super().clean()
-        if not self.cleaned_data["words_csv"] and not self.cleaned_data["audio_files"]:
+        if not self.cleaned_data["topics_csv"] and not self.cleaned_data["words_csv"] and not self.cleaned_data["audio_files"]:
             raise forms.ValidationError("Please upload a file.")
         

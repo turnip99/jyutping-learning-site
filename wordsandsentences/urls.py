@@ -19,5 +19,6 @@ urlpatterns = [
     path('sentence_update/<int:pk>/', staff_required(views.SentenceUpdateView.as_view()), name='sentence_update'),
     path('sentence_delete/<int:pk>/', staff_required(views.SentenceDeleteView.as_view()), name='sentence_delete'),
     path('import/', staff_required(views.ImportView.as_view()), name='import'),
+    path('topics_export/', staff_required(views.TopicsExportView.as_view()), name='topics_export'),
     path('words_export/', staff_required(views.WordsExportView.as_view()), name='words_export'),
 ]

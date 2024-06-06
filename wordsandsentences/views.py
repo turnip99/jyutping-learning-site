@@ -452,6 +452,29 @@ class ImportView(generic.FormView):
     success_url = reverse_lazy("index")
 
     def form_valid(self, form):
+        if topics_csv := form.cleaned_data["topics_csv"]:
+            csv_rows = list(csv.DictReader(topics_csv.file.read().decode('utf-8-sig').splitlines()))
+            with transaction.atomic():
+                try:
+                    all_topics = Topic.objects.all()
+                    imported_topic_names = [row["topic_name"] for row in csv_rows]
+                    loc = 0
+                    # Get existing topics and make sure they maintain their order before we add the new topics.
+                    for topic in all_topics.exclude(topic_name__in=imported_topic_names):
+                        print(f"Setting loc of existing topic {topic.topic_name} to {loc}")
+                        topic.loc = loc
+                        topic.save()
+                        loc += 10
+                    for row in csv_rows:
+                        imported_topic_name = row["topic_name"]
+                        topic, _created = Topic.objects.get_or_create(topic_name=imported_topic_name)
+                        topic.colour = row["colour"]
+                        print(f"Assigning colour {topic.colour} to {topic.topic_name}")
+                        topic.loc = loc
+                        topic.save()
+                        loc += 10
+                except Exception as e:
+                    return render(self.request, self.template_name, {"form": form, "import_error": f"Error in topics CSV: {e}"})
         if words_csv := form.cleaned_data["words_csv"]:
             csv_rows = list(csv.DictReader(words_csv.file.read().decode('utf-8-sig').splitlines()))
             with transaction.atomic():
@@ -529,7 +552,7 @@ class ImportView(generic.FormView):
                                 Sentence.objects.get(topic__topic_name=topic, jyutping=sentence_row["jyutping"]).response_to.set(response_to_obj_list)
                                 
                 except Exception as e:
-                    return render(self.request, self.template_name, {"form": form, "import_error": f"Error in CSV: {e}"})
+                    return render(self.request, self.template_name, {"form": form, "import_error": f"Error in words CSV: {e}"})
         if audio_files := form.cleaned_data["audio_files"]:
             with transaction.atomic():
                 try:
@@ -548,6 +571,20 @@ class ImportView(generic.FormView):
                     return render(self.request, self.template_name, {"form": form, "import_error": f"Error in audio files: {e}"})
 
         return super().form_valid(form)
+    
+
+class TopicsExportView(generic.View):
+    def get(request, *args, **kwargs):
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=Jyutping topics {datetime.now().date().strftime('%d-%m-%Y')}.csv"}
+        )
+        response.write(codecs.BOM_UTF8)  # Force into UTF-8 so that it accepts Chinese characters.
+        writer = unicodecsv.writer(response)
+        writer.writerow(["topic_name", "colour"])
+        for topic in Topic.objects.all():
+            writer.writerow([topic.topic_name, topic.colour])
+        return response
     
 
 class WordsExportView(generic.View):
