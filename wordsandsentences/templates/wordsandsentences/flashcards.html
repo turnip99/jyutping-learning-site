@@ -12,7 +12,6 @@
             padding: 0.75em;
             background-color: var(--content-bg-colour);
             border: 2px solid var(--content-border-colour);
-            border-radius: 0.75em;
             cursor: pointer;
             text-align: center;
             min-height: 8em !important;
@@ -32,7 +31,7 @@
     {% for word_or_sentence in words_and_sentences %}   
         <div class="flashcard-div{% if not forloop.first %} d-none{% endif %}" data-index="{{ forloop.counter }}">
             <div class="text-end">Card {{ forloop.counter }}/{{ words_and_sentences|length }}</div>
-            <div class="flashcard">
+            <div class="flashcard shadow">
                 <div class="flashcard-text{% if starting_side == 'jyutping' %} active{% endif %}" {% if starting_side == 'english' %} style="display: none;"{% endif %}>
                     {{ word_or_sentence.cantonese_and_jyutping }}
                     {% if word_or_sentence.audio_file %}
