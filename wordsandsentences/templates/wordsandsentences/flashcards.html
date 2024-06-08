@@ -37,7 +37,7 @@
     {% for word_or_sentence in words_and_sentences %}   
         <div class="flashcard-div{% if not forloop.first %} d-none{% endif %}" data-index="{{ forloop.counter }}">
             <div class="text-end">Card {{ forloop.counter }}/{{ words_and_sentences|length }}</div>
-            <flip-card class="flashcard" variant="click" style="{% if starting_side == 'jyutping' %}--flip-card-background-color-front: {{ word_or_sentence.topic.colour }}; --flip-card-background-color-back: {{ word_or_sentence.topic.colour }}bb;{% else %}--flip-card-background-color-front: {{ word_or_sentence.topic.colour }}cc; --flip-card-background-color-back: {{ word_or_sentence.topic.colour }};{% endif %}">
+            <flip-card class="flashcard" variant="click" style="{% if starting_side == 'jyutping' %}--flip-card-background-color-front: {{ word_or_sentence.topic.colour }}; --flip-card-background-color-back: #000; {% else %}--flip-card-background-color-front: #000; --flip-card-background-color-back: {{ word_or_sentence.topic.colour }};{% endif %}">
                 <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}front{% else %}back{% endif %}">
                     <span>
                         {{ word_or_sentence.cantonese_and_jyutping }}
@@ -49,7 +49,7 @@
                         <span class="fst-italic fw-normal">{{ word_or_sentence.notes }}</span>
                     {% endif %}
                 </div>
-                <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}back{% else %}front{% endif %}">
+                <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}back{% else %}front{% endif %}" style="color: {{ word_or_sentence.topic.colour }};">
                     {{ word_or_sentence.english }}
                 </div>
             </flip-card>
