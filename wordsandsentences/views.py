@@ -45,14 +45,14 @@ class QuizView(generic.FormView):
         sentences_without_responses_portion = sentences_without_responses_count / sentence_count
         question_category_random = random.random()
         question_type_random = random.random()
-        if question_category_random > 0.65:  # General questions
+        if question_category_random > 0.59:  # General questions
             if question_type_random > 0.6:
                 return "j_to_e"
             elif question_type_random > 0.27:
                 return "e_to_j_buttons"
             else:
                 return "e_to_j_text"
-        question_category_random /= 0.65
+        question_category_random /= 0.59
         if question_category_random <= word_portion:  # Word questions
             if include_audio:
                 if question_type_random > 0.63:
@@ -80,7 +80,6 @@ class QuizView(generic.FormView):
                 return "sentence_to_missing_word_text"
             else:
                 return "words_to_ordered_sentence"
-            
         
     @staticmethod
     def get_random_word_or_sentence(exclude_word_ids=[], exclude_sentence_ids=[]):
@@ -230,7 +229,7 @@ class QuizView(generic.FormView):
                     question_responses = question_sentence.responses.all()
                     correct_sentence = random.choice(question_responses)
                     question_text = f"Which of these would be a response to '{question_sentence.cantonese_and_jyutping}'?"
-                    incorrect_sentences = self.get_incorrect_words(correct_sentence, True, exclude_ids=list(question_responses.values_list("id", flat=True)))
+                    incorrect_sentences = self.get_incorrect_words(correct_sentence, True, exclude_ids=list(question_responses.values_list("id", flat=True)) + [question_sentence.id])
                     options = [{"text": sentence.jyutping, "cantonese": sentence.cantonese, "audio_url": None, "hide_text": False} for sentence in [incorrect_sentence for incorrect_sentence in incorrect_sentences] + [correct_sentence]]
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_sentence.jyutping, "options": options, "ordering_options": None})
@@ -250,7 +249,7 @@ class QuizView(generic.FormView):
                     question_response_to = question_sentence.response_to.all()
                     correct_sentence = random.choice(question_response_to)
                     question_text = f"Which of these would '{question_sentence.cantonese_and_jyutping}' be a response to?"
-                    incorrect_sentences = self.get_incorrect_words(correct_sentence, True, exclude_ids=list(question_response_to.values_list("id", flat=True)))
+                    incorrect_sentences = self.get_incorrect_words(correct_sentence, True, exclude_ids=list(question_response_to.values_list("id", flat=True)) + [question_sentence.id])
                     options = [{"text": sentence.jyutping, "cantonese": sentence.cantonese, "audio_url": None, "hide_text": False} for sentence in [incorrect_sentence for incorrect_sentence in incorrect_sentences] + [correct_sentence]]
                     random.shuffle(options)
                     questions.append({"question_text": question_text, "question_audio_url": None, "correct": correct_sentence.jyutping, "options": options, "ordering_options": None})
