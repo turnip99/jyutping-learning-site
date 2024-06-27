@@ -41,11 +41,11 @@
                 <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}front{% else %}back{% endif %}">
                     <span>
                         {{ word_or_sentence.cantonese_and_jyutping }}
-                        {% if word_or_sentence.audio_file and starting_side == 'english' %}
+                        {% if word_or_sentence.audio_file %}
                             {% include "wordsandsentences/audio.html" with audio_url=word_or_sentence.audio_file.url %}
                         {% endif %}
                     </span>
-                    {% if word_or_sentence.notes %}
+                    {% if word_or_sentence.notes and starting_side == 'english' %}
                         <span class="fst-italic fw-normal">{{ word_or_sentence.notes }}</span>
                     {% endif %}
                 </div>
