@@ -41,7 +41,7 @@
                 <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}front{% else %}back{% endif %}">
                     <span>
                         {{ word_or_sentence.cantonese_and_jyutping }}
-                        {% if word_or_sentence.audio_file and starting_side == 'jyutping' %}
+                        {% if word_or_sentence.audio_file and starting_side == 'english' %}
                             {% include "wordsandsentences/audio.html" with audio_url=word_or_sentence.audio_file.url %}
                         {% endif %}
                     </span>
