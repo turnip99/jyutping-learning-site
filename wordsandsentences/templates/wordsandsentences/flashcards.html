@@ -41,7 +41,7 @@
                 <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}front{% else %}back{% endif %}">
                     <span>
                         {{ word_or_sentence.cantonese_and_jyutping }}
-                        {% if word_or_sentence.audio_file %}
+                        {% if word_or_sentence.audio_file and starting_side == 'jyutping' %}
                             {% include "wordsandsentences/audio.html" with audio_url=word_or_sentence.audio_file.url %}
                         {% endif %}
                     </span>
@@ -50,7 +50,10 @@
                     {% endif %}
                 </div>
                 <div class="flashcard-details" slot="{% if starting_side == 'jyutping' %}back{% else %}front{% endif %}" style="color: {{ word_or_sentence.topic.colour }};">
-                    {{ word_or_sentence.english }}
+                    <span>{{ word_or_sentence.english }}</span>
+                    {% if word_or_sentence.notes and starting_side == 'jyutping' %}
+                        <span class="fst-italic fw-normal">{{ word_or_sentence.notes }}</span>
+                    {% endif %}
                 </div>
             </flip-card>
         </div>
